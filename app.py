@@ -1,115 +1,95 @@
-import sqlite3
-import pandas as pd
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder
-from graphviz import Digraph
+import graphviz as gv
+import sqlite3
+# # Sample data: Dictionary where the keys are subjects and the values include both pre-requisites and co-requisites
+# subjects = {
+#     "Year 1 - Semester 1": {
+#         "Math 101": {"prerequisites": [], "corequisites": []},
+#         "Physics 101": {"prerequisites": [], "corequisites": []},
+#         "Programming 101": {"prerequisites": [], "corequisites": []}
+#     },
+#     "Year 1 - Semester 2": {
+#         "Math 102": {"prerequisites": ["Math 101"], "corequisites": []},
+#         "Physics 102": {"prerequisites": ["Physics 101"], "corequisites": ["Math 102"]},
+#         "Programming 102": {"prerequisites": ["Programming 101", "Physics 101"], "corequisites": []}
+#     },
+#     "Year 2 - Semester 1": {
+#         "Math 201": {"prerequisites": ["Math 102"], "corequisites": []},
+#         "Physics 201": {"prerequisites": ["Physics 102"], "corequisites": []},
+#         "Data Structures": {"prerequisites": ["Programming 102"], "corequisites": []}
+#     },
+#     "Year 2 - Semester 2": {
+#         "Math 202": {"prerequisites": ["Math 201"], "corequisites": []},
+#         "Physics 202": {"prerequisites": ["Physics 201"], "corequisites": []},
+#         "Algorithms": {"prerequisites": ["Data Structures"], "corequisites": ["Math 202"]}
+#     }
+# }
 
-# Function to retrieve data from the SQLite database
-def get_data_from_db(db_path, query):
+def load_subjects_from_db(db_path):
     # Connect to the SQLite database
     conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     
-    # Retrieve data using the provided query
-    df = pd.read_sql_query(query, conn)
+    # Query to fetch data from the database
+    query = """
+    SELECT Year, Term, Code, Prerequisites, Co_requisites 
+    FROM ECE2021;
+    """
+    
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    
+    # Create a dictionary to store the subjects
+    subjects = {}
+    
+    for row in rows:
+        year = row[0]
+        term = row[1]
+        subject_code = row[2]
+        prerequisites = row[3].split(',') if row[3] else []
+        corequisites = row[4].split(',') if row[4] else []
+        
+        # Create a semester key
+        semester_key = f"{year} - {term}"
+        
+        # If the semester does not exist in the dictionary, create it
+        if semester_key not in subjects:
+            subjects[semester_key] = {}
+        
+        # Add the subject to the semester
+        subjects[semester_key][subject_code] = {
+            "prerequisites": [prereq.strip() for prereq in prerequisites],
+            "corequisites": [coreq.strip() for coreq in corequisites]
+        }
     
     # Close the database connection
     conn.close()
     
-    return df
+    return subjects
 
-def create_graph(data):
-    dot = Digraph(format='png')
+# Function to build the graph with co-requisites
+def build_subject_graph(subjects):
+    dot = gv.Digraph()
+    dot.attr(rankdir='LR', size='20,10', nodesep='0.05', ranksep='0.5')
+    # Iterate over semesters and subjects to add nodes and edges
+    for semester, semester_subjects in subjects.items():
+        with dot.subgraph() as s:
+            s.attr(rank='same')  # Set rank for subjects in the same semester
+            for subject, details in semester_subjects.items():
+                s.node(subject, subject, shape='box', style='rounded',fontsize='10', width='0.001', height='0.0001')  # Add node with rounded box
 
-    # Add nodes and edges
-    for index, row in data.iterrows():
-        code = row['Code']  # Assuming the column for the code is named 'code'
-        prerequisites = row['Prerequisites']  # Assuming a column for prerequisites
-        requisites = row['Co_requisites']  # Assuming a column for requisites
-        
-        # Add the main code node
-        dot.node(code)
+                # Add edges for prerequisites
+                for prereq in details['prerequisites']:
+                    dot.edge(prereq, subject)
 
-        # Add prerequisite edges
-        if isinstance(prerequisites, str):  # Check if it's a string
-            for prereq in prerequisites.split(','):
-                prereq = prereq.strip()
-                dot.node(prereq)  # Ensure prerequisite node exists
-                dot.edge(prereq, code)  # Create edge from prerequisite to code
-
-        # Add requisite edges
-        if isinstance(requisites, str):  # Check if it's a string
-            for req in requisites.split(','):
-                req = req.strip()
-                dot.node(req)  # Ensure requisite node exists
-                dot.edge(code, req)  # Create edge from code to requisite
+                # Add edges for corequisites (using dashed lines with arrows on both ends)
+                for coreq in details['corequisites']:
+                    dot.edge(coreq, subject, style='dashed', dir='both', constraint="false")
 
     return dot
 
-# Database path and query (you can modify these as needed)
-db_path = 'ece.db'  # Path to your SQLite database
-query = 'SELECT * FROM ECE2021'  # SQL query to fetch data from the table
-
- # Connect to SQLite database to get list of tables
-conn = sqlite3.connect(db_path)  # Replace with your database file
-table_names = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table';", conn)
-conn.close()
-
-# Dropdown for selecting a table
-selected_table = st.selectbox("Select a table:", table_names['name'].tolist())
-
-if selected_table:
-    # Streamlit app
-    st.title(selected_table)
-
-    # Get data from the database
-    data = get_data_from_db(db_path, 'SELECT * FROM '+selected_table)
-
-    # Assuming there is a 'year_column' in the table, we will filter by year 1, 2, 3, and 4
-    year_column = 'Year'  # Replace with the actual column name representing year categories
-    years = ['1', '2', '3', '4']  # List of years 1, 2, 3, 4 to separate data into
-
-    # Loop through each year and create a separate table
-    for year in years:
-        st.subheader(f"Data for Year {year}")
-        
-        # Filter the data for the current year
-        data_for_year = data[data[year_column] == year]
-        
-        # Insert a drag column for each table
-        data_for_year.insert(0, 'Drag', '⇅')
-        
-        # Drop the year column from the DataFrame before displaying it
-        data_for_year = data_for_year.drop(columns=[year_column])
-        
-        # Build the grid options to enable row dragging
-        gb = GridOptionsBuilder.from_dataframe(data_for_year)
-        gb.configure_default_column(editable=True)  # Makes columns editable (optional)
-        gb.configure_grid_options(rowDragManaged=True)  # Enables row drag management
-        gb.configure_column('Drag', rowDrag=True, width=50)  # Set rowDrag on the Drag column with specified width
-        
-        grid_options = gb.build()
-
-        # Display the data in an AgGrid table with row dragging enabled
-        AgGrid(data_for_year, gridOptions=grid_options, enable_enterprise_modules=True,height=500, fit_columns_on_grid_load=True)
-
-        # Adjust the layout of the AgGrid table
-        st.markdown(
-            """
-            <style>
-            .ag-theme-alpine {
-                --ag-grid-header-background-color: #f7f7f7;
-                --ag-grid-header-color: #000;
-                --ag-grid-row-height: 30px; /* Adjust row height */
-                --ag-grid-font-size: 14px; /* Adjust font size */
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # Create the Graphviz graph
-    graph = create_graph(data)
-
-    graph_string=graph.source
-
-    st.graphviz_chart(graph_string, use_container_width=False)
+# Build and render the graph
+db_path = 'ece.db'  # Change this to your database path
+subjects = load_subjects_from_db(db_path)
+graph = build_subject_graph(subjects)
+st.graphviz_chart(graph)
