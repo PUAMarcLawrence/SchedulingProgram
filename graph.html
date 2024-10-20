@@ -1,0 +1,167 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 600px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+             #config {
+                 float: left;
+                 width: 400px;
+                 height: 600px;
+             }
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+            <div id="config"></div>
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "id": "CM011", "label": "CM011", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "CM011L", "label": "CM011L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ENV021", "label": "ENV021", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MSE020", "label": "MSE020", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA119X", "label": "ECEA119X", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "DRAW10W", "label": "DRAW10W", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "CAD10L", "label": "CAD10L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "FW01-1", "label": "FW01-1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "FW03-1", "label": "FW03-1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "FW04-1", "label": "FW04-1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MATH146", "label": "MATH146", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MATH147", "label": "MATH147", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "PHYS101", "label": "PHYS101", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "PHYS101L", "label": "PHYS101L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED102-1", "label": "GED102-1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MATH149", "label": "MATH149", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "NSTP100", "label": "NSTP100", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "NSTP200", "label": "NSTP200", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "FW02-1", "label": "FW02-1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MATH148", "label": "MATH148", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MATH148X", "label": "MATH148X", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MATH142-2", "label": "MATH142-2", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "NSTP300", "label": "NSTP300", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "PHYS102", "label": "PHYS102", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "PHYS102L", "label": "PHYS102L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "MATH156", "label": "MATH156", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA198-1L", "label": "ECEA198-1L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA118F", "label": "ECEA118F", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "NSTP400", "label": "NSTP400", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "EEA101", "label": "EEA101", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "EEA101L", "label": "EEA101L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA101", "label": "ECEA101", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA101L", "label": "ECEA101L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "EEA102", "label": "EEA102", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "EEA102L", "label": "EEA102L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED106", "label": "GED106", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA109", "label": "ECEA109", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA106", "label": "ECEA106", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA106L", "label": "ECEA106L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA115", "label": "ECEA115", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA102", "label": "ECEA102", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA102L", "label": "ECEA102L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA111", "label": "ECEA111", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA111L", "label": "ECEA111L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA104", "label": "ECEA104", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA104L", "label": "ECEA104L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA105X", "label": "ECEA105X", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA103", "label": "ECEA103", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA103L", "label": "ECEA103L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA107", "label": "ECEA107", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA107L", "label": "ECEA107L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA108", "label": "ECEA108", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA108L", "label": "ECEA108L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA200-1L", "label": "ECEA200-1L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA112", "label": "ECEA112", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA112L", "label": "ECEA112L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA113-1L", "label": "ECEA113-1L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "2nd Year Standing", "label": "2nd Year Standing", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "BE101P", "label": "BE101P", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "DS100-1", "label": "DS100-1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA200-2L", "label": "ECEA200-2L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "CPE126", "label": "CPE126", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA200-3L", "label": "ECEA200-3L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA120D", "label": "ECEA120D", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA114", "label": "ECEA114", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA114L", "label": "ECEA114L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA113-2L", "label": "ECEA113-2L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA114X", "label": "ECEA114X", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA105", "label": "ECEA105", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA105L", "label": "ECEA105L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA116", "label": "ECEA116", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA199R", "label": "ECEA199R", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "3rd Year Standing", "label": "3rd Year Standing", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "TRACK 1", "label": "TRACK 1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA110", "label": "ECEA110", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA119", "label": "ECEA119", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "EMG20-1", "label": "EMG20-1", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "IE103", "label": "IE103", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "TRACK 2", "label": "TRACK 2", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA198-2L", "label": "ECEA198-2L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "TRACK 3", "label": "TRACK 3", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA100", "label": "ECEA100", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED105", "label": "GED105", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED101", "label": "GED101", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "CPE103-1L", "label": "CPE103-1L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "CPE111", "label": "CPE111", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED104", "label": "GED104", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED103", "label": "GED103", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "RZL110", "label": "RZL110", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED109", "label": "GED109", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED117", "label": "GED117", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED108", "label": "GED108", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED110", "label": "GED110", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "ECEA121L", "label": "ECEA121L", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "GED107", "label": "GED107", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "SGE100X", "label": "SGE100X", "shape": "dot", "size": 10}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "CM011", "to": "CM011L", "width": 1}, {"arrows": "to", "from": "CM011", "to": "ENV021", "width": 1}, {"arrows": "to", "from": "CM011", "to": "MSE020", "width": 1}, {"arrows": "to", "from": "CM011", "to": "ECEA119X", "width": 1}, {"arrows": "to", "from": "CM011L", "to": "CM011", "width": 1}, {"arrows": "to", "from": "CM011L", "to": "MSE020", "width": 1}, {"arrows": "to", "from": "DRAW10W", "to": "CAD10L", "width": 1}, {"arrows": "to", "from": "FW01-1", "to": "FW03-1", "width": 1}, {"arrows": "to", "from": "FW01-1", "to": "FW04-1", "width": 1}, {"arrows": "to", "from": "MATH146", "to": "MATH147", "width": 1}, {"arrows": "to", "from": "MATH146", "to": "PHYS101", "width": 1}, {"arrows": "to", "from": "MATH146", "to": "PHYS101L", "width": 1}, {"arrows": "to", "from": "MATH146", "to": "GED102-1", "width": 1}, {"arrows": "to", "from": "MATH146", "to": "MATH149", "width": 1}, {"arrows": "to", "from": "NSTP100", "to": "NSTP200", "width": 1}, {"arrows": "to", "from": "FW02-1", "to": "FW03-1", "width": 1}, {"arrows": "to", "from": "FW02-1", "to": "FW04-1", "width": 1}, {"arrows": "to", "from": "MATH147", "to": "MATH148", "width": 1}, {"arrows": "to", "from": "MATH147", "to": "MATH148X", "width": 1}, {"arrows": "to", "from": "MATH147", "to": "MATH142-2", "width": 1}, {"arrows": "to", "from": "NSTP200", "to": "NSTP300", "width": 1}, {"arrows": "to", "from": "PHYS101", "to": "PHYS101L", "width": 1}, {"arrows": "to", "from": "PHYS101", "to": "PHYS102", "width": 1}, {"arrows": "to", "from": "PHYS101", "to": "PHYS102L", "width": 1}, {"arrows": "to", "from": "PHYS101", "to": "ECEA119X", "width": 1}, {"arrows": "to", "from": "PHYS101L", "to": "PHYS101", "width": 1}, {"arrows": "to", "from": "PHYS101L", "to": "PHYS102", "width": 1}, {"arrows": "to", "from": "PHYS101L", "to": "PHYS102L", "width": 1}, {"arrows": "to", "from": "MATH148", "to": "MATH148X", "width": 1}, {"arrows": "to", "from": "MATH148", "to": "MATH156", "width": 1}, {"arrows": "to", "from": "MATH148X", "to": "MATH148", "width": 1}, {"arrows": "to", "from": "MATH148X", "to": "ECEA198-1L", "width": 1}, {"arrows": "to", "from": "MATH148X", "to": "ECEA118F", "width": 1}, {"arrows": "to", "from": "MATH149", "to": "MATH156", "width": 1}, {"arrows": "to", "from": "NSTP300", "to": "NSTP400", "width": 1}, {"arrows": "to", "from": "PHYS102", "to": "PHYS102L", "width": 1}, {"arrows": "to", "from": "PHYS102", "to": "EEA101", "width": 1}, {"arrows": "to", "from": "PHYS102", "to": "EEA101L", "width": 1}, {"arrows": "to", "from": "PHYS102", "to": "ECEA119X", "width": 1}, {"arrows": "to", "from": "PHYS102L", "to": "PHYS102", "width": 1}, {"arrows": "to", "from": "PHYS102L", "to": "EEA101", "width": 1}, {"arrows": "to", "from": "PHYS102L", "to": "EEA101L", "width": 1}, {"arrows": "to", "from": "EEA101", "to": "EEA101L", "width": 1}, {"arrows": "to", "from": "EEA101", "to": "ECEA101", "width": 1}, {"arrows": "to", "from": "EEA101", "to": "ECEA101L", "width": 1}, {"arrows": "to", "from": "EEA101", "to": "EEA102", "width": 1}, {"arrows": "to", "from": "EEA101", "to": "EEA102L", "width": 1}, {"arrows": "to", "from": "EEA101L", "to": "EEA101", "width": 1}, {"arrows": "to", "from": "EEA101L", "to": "ECEA101", "width": 1}, {"arrows": "to", "from": "EEA101L", "to": "ECEA101L", "width": 1}, {"arrows": "to", "from": "EEA101L", "to": "EEA102", "width": 1}, {"arrows": "to", "from": "EEA101L", "to": "EEA102L", "width": 1}, {"arrows": "to", "from": "GED106", "to": "ECEA109", "width": 1}, {"arrows": "to", "from": "MATH156", "to": "ECEA106", "width": 1}, {"arrows": "to", "from": "MATH156", "to": "ECEA106L", "width": 1}, {"arrows": "to", "from": "MATH156", "to": "ECEA115", "width": 1}, {"arrows": "to", "from": "ECEA101", "to": "ECEA101L", "width": 1}, {"arrows": "to", "from": "ECEA101", "to": "ECEA102", "width": 1}, {"arrows": "to", "from": "ECEA101", "to": "ECEA102L", "width": 1}, {"arrows": "to", "from": "ECEA101", "to": "ECEA111", "width": 1}, {"arrows": "to", "from": "ECEA101", "to": "ECEA111L", "width": 1}, {"arrows": "to", "from": "ECEA101", "to": "ECEA104", "width": 1}, {"arrows": "to", "from": "ECEA101", "to": "ECEA104L", "width": 1}, {"arrows": "to", "from": "ECEA101L", "to": "ECEA101", "width": 1}, {"arrows": "to", "from": "ECEA101L", "to": "ECEA102", "width": 1}, {"arrows": "to", "from": "ECEA101L", "to": "ECEA102L", "width": 1}, {"arrows": "to", "from": "ECEA101L", "to": "ECEA111", "width": 1}, {"arrows": "to", "from": "ECEA101L", "to": "ECEA111L", "width": 1}, {"arrows": "to", "from": "ECEA101L", "to": "ECEA104", "width": 1}, {"arrows": "to", "from": "ECEA101L", "to": "ECEA104L", "width": 1}, {"arrows": "to", "from": "EEA102", "to": "EEA102L", "width": 1}, {"arrows": "to", "from": "EEA102", "to": "ECEA105X", "width": 1}, {"arrows": "to", "from": "EEA102L", "to": "EEA102", "width": 1}, {"arrows": "to", "from": "MATH142-2", "to": "ECEA109", "width": 1}, {"arrows": "to", "from": "ECEA102", "to": "ECEA102L", "width": 1}, {"arrows": "to", "from": "ECEA102", "to": "ECEA111", "width": 1}, {"arrows": "to", "from": "ECEA102", "to": "ECEA103", "width": 1}, {"arrows": "to", "from": "ECEA102", "to": "ECEA103L", "width": 1}, {"arrows": "to", "from": "ECEA102", "to": "ECEA107", "width": 1}, {"arrows": "to", "from": "ECEA102", "to": "ECEA107L", "width": 1}, {"arrows": "to", "from": "ECEA102L", "to": "ECEA102", "width": 1}, {"arrows": "to", "from": "ECEA102L", "to": "ECEA103", "width": 1}, {"arrows": "to", "from": "ECEA102L", "to": "ECEA103L", "width": 1}, {"arrows": "to", "from": "ECEA102L", "to": "ECEA107", "width": 1}, {"arrows": "to", "from": "ECEA102L", "to": "ECEA107L", "width": 1}, {"arrows": "to", "from": "ECEA106", "to": "ECEA106L", "width": 1}, {"arrows": "to", "from": "ECEA106", "to": "ECEA107", "width": 1}, {"arrows": "to", "from": "ECEA106", "to": "ECEA107L", "width": 1}, {"arrows": "to", "from": "ECEA106", "to": "ECEA108", "width": 1}, {"arrows": "to", "from": "ECEA106", "to": "ECEA108L", "width": 1}, {"arrows": "to", "from": "ECEA106L", "to": "ECEA106", "width": 1}, {"arrows": "to", "from": "ECEA106L", "to": "ECEA107", "width": 1}, {"arrows": "to", "from": "ECEA106L", "to": "ECEA107L", "width": 1}, {"arrows": "to", "from": "ECEA106L", "to": "ECEA108", "width": 1}, {"arrows": "to", "from": "ECEA106L", "to": "ECEA108L", "width": 1}, {"arrows": "to", "from": "ECEA109", "to": "ECEA200-1L", "width": 1}, {"arrows": "to", "from": "ECEA111", "to": "ECEA102", "width": 1}, {"arrows": "to", "from": "ECEA111", "to": "ECEA111L", "width": 1}, {"arrows": "to", "from": "ECEA111", "to": "ECEA112", "width": 1}, {"arrows": "to", "from": "ECEA111", "to": "ECEA112L", "width": 1}, {"arrows": "to", "from": "ECEA111", "to": "ECEA113-1L", "width": 1}, {"arrows": "to", "from": "ECEA111", "to": "ECEA108", "width": 1}, {"arrows": "to", "from": "ECEA111", "to": "ECEA108L", "width": 1}, {"arrows": "to", "from": "ECEA111L", "to": "ECEA111", "width": 1}, {"arrows": "to", "from": "ECEA111L", "to": "ECEA112", "width": 1}, {"arrows": "to", "from": "ECEA111L", "to": "ECEA112L", "width": 1}, {"arrows": "to", "from": "ECEA111L", "to": "ECEA113-1L", "width": 1}, {"arrows": "to", "from": "ECEA111L", "to": "ECEA108", "width": 1}, {"arrows": "to", "from": "ECEA111L", "to": "ECEA108L", "width": 1}, {"arrows": "to", "from": "2nd Year Standing", "to": "BE101P", "width": 1}, {"arrows": "to", "from": "2nd Year Standing", "to": "DS100-1", "width": 1}, {"arrows": "to", "from": "2nd Year Standing", "to": "ECEA200-1L", "width": 1}, {"arrows": "to", "from": "2nd Year Standing", "to": "ECEA200-2L", "width": 1}, {"arrows": "to", "from": "DS100-1", "to": "CPE126", "width": 1}, {"arrows": "to", "from": "ECEA103", "to": "ECEA103L", "width": 1}, {"arrows": "to", "from": "ECEA103", "to": "ECEA200-3L", "width": 1}, {"arrows": "to", "from": "ECEA103", "to": "ECEA105X", "width": 1}, {"arrows": "to", "from": "ECEA103", "to": "ECEA120D", "width": 1}, {"arrows": "to", "from": "ECEA103L", "to": "ECEA103", "width": 1}, {"arrows": "to", "from": "ECEA103L", "to": "ECEA120D", "width": 1}, {"arrows": "to", "from": "ECEA112", "to": "ECEA112L", "width": 1}, {"arrows": "to", "from": "ECEA112", "to": "ECEA114", "width": 1}, {"arrows": "to", "from": "ECEA112", "to": "ECEA114L", "width": 1}, {"arrows": "to", "from": "ECEA112L", "to": "ECEA112", "width": 1}, {"arrows": "to", "from": "ECEA112L", "to": "ECEA114", "width": 1}, {"arrows": "to", "from": "ECEA112L", "to": "ECEA114L", "width": 1}, {"arrows": "to", "from": "ECEA113-1L", "to": "ECEA113-2L", "width": 1}, {"arrows": "to", "from": "ECEA113-1L", "to": "ECEA114X", "width": 1}, {"arrows": "to", "from": "ECEA200-1L", "to": "ECEA200-2L", "width": 1}, {"arrows": "to", "from": "ECEA104", "to": "ECEA104L", "width": 1}, {"arrows": "to", "from": "ECEA104", "to": "ECEA200-3L", "width": 1}, {"arrows": "to", "from": "ECEA104", "to": "ECEA105", "width": 1}, {"arrows": "to", "from": "ECEA104", "to": "ECEA105L", "width": 1}, {"arrows": "to", "from": "ECEA104", "to": "ECEA105X", "width": 1}, {"arrows": "to", "from": "ECEA104L", "to": "ECEA104", "width": 1}, {"arrows": "to", "from": "ECEA104L", "to": "ECEA105", "width": 1}, {"arrows": "to", "from": "ECEA104L", "to": "ECEA105L", "width": 1}, {"arrows": "to", "from": "ECEA115", "to": "ECEA114", "width": 1}, {"arrows": "to", "from": "ECEA115", "to": "ECEA114L", "width": 1}, {"arrows": "to", "from": "ECEA115", "to": "ECEA119X", "width": 1}, {"arrows": "to", "from": "ECEA200-2L", "to": "ECEA200-3L", "width": 1}, {"arrows": "to", "from": "ECEA107", "to": "ECEA107L", "width": 1}, {"arrows": "to", "from": "ECEA107L", "to": "ECEA107", "width": 1}, {"arrows": "to", "from": "ECEA114", "to": "ECEA114L", "width": 1}, {"arrows": "to", "from": "ECEA114", "to": "ECEA114X", "width": 1}, {"arrows": "to", "from": "ECEA114", "to": "ECEA116", "width": 1}, {"arrows": "to", "from": "ECEA114L", "to": "ECEA114", "width": 1}, {"arrows": "to", "from": "ECEA114X", "to": "ECEA114", "width": 1}, {"arrows": "to", "from": "ECEA114X", "to": "ECEA198-1L", "width": 1}, {"arrows": "to", "from": "ECEA114X", "to": "ECEA118F", "width": 1}, {"arrows": "to", "from": "ECEA200-3L", "to": "ECEA199R", "width": 1}, {"arrows": "to", "from": "3rd Year Standing", "to": "ECEA200-3L", "width": 1}, {"arrows": "to", "from": "3rd Year Standing", "to": "TRACK 1", "width": 1}, {"arrows": "to", "from": "3rd Year Standing", "to": "ECEA110", "width": 1}, {"arrows": "to", "from": "3rd Year Standing", "to": "ECEA118F", "width": 1}, {"arrows": "to", "from": "3rd Year Standing", "to": "ECEA119", "width": 1}, {"arrows": "to", "from": "3rd Year Standing", "to": "EMG20-1", "width": 1}, {"arrows": "to", "from": "3rd Year Standing", "to": "IE103", "width": 1}, {"arrows": "to", "from": "TRACK 1", "to": "TRACK 2", "width": 1}, {"arrows": "to", "from": "ECEA105", "to": "ECEA105L", "width": 1}, {"arrows": "to", "from": "ECEA105", "to": "ECEA105X", "width": 1}, {"arrows": "to", "from": "ECEA105", "to": "ECEA116", "width": 1}, {"arrows": "to", "from": "ECEA105", "to": "ECEA120D", "width": 1}, {"arrows": "to", "from": "ECEA105L", "to": "ECEA105", "width": 1}, {"arrows": "to", "from": "ECEA105L", "to": "ECEA120D", "width": 1}, {"arrows": "to", "from": "ECEA105X", "to": "ECEA105", "width": 1}, {"arrows": "to", "from": "ECEA105X", "to": "ECEA118F", "width": 1}, {"arrows": "to", "from": "ECEA108", "to": "ECEA108L", "width": 1}, {"arrows": "to", "from": "ECEA108L", "to": "ECEA108", "width": 1}, {"arrows": "to", "from": "ECEA198-1L", "to": "ECEA198-2L", "width": 1}, {"arrows": "to", "from": "TRACK 2", "to": "TRACK 3", "width": 1}, {"arrows": "to", "from": "ECEA110", "to": "EMG20-1", "width": 1}, {"arrows": "to", "from": "MSE020", "to": "ECEA119X", "width": 1}, {"arrows": "to", "from": "ECEA118F", "to": "ECEA119X", "width": 1}, {"arrows": "to", "from": "ECEA119X", "to": "ECEA118F", "width": 1}, {"arrows": "to", "from": "ECEA119X", "to": "ECEA119", "width": 1}, {"arrows": "to", "from": "ECEA119", "to": "ECEA119X", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": true
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+                  // if this network requires displaying the configure window,
+                  // put it in its div
+                  options.configure["container"] = document.getElementById("config");
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
