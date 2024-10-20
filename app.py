@@ -79,7 +79,7 @@ def build_subject_graph(subjects):
     return dot
 
 
-# Function to format subjects for legend, including Title
+# Function to format subjects for legend, including Title and color coding
 def format_subjects_for_legend(subjects):
     legend_data = []
     for semester, semester_subjects in subjects.items():
@@ -89,9 +89,36 @@ def format_subjects_for_legend(subjects):
             corequisites = ', '.join(details['corequisites']) if details['corequisites'] else "None"
             legend_data.append([semester, subject, title, prerequisites, corequisites])
     
-    # Updated columns to include Title
+    # Create a DataFrame
     df = pd.DataFrame(legend_data, columns=["Semester", "Subject Code", "Title", "Prerequisites", "Co-requisites"])
-    return df
+
+    # Define color map for semesters
+    color_map = {
+        "1 - 1": "background-color: lightblue",
+        "1 - 2": "background-color: lightgreen",
+        "1 - 3": "background-color: lightblue",
+        "1 - 4": "background-color: lightgreen",
+        "2 - 1": "background-color: lightblue",
+        "2 - 2": "background-color: lightgreen",
+        "2 - 3": "background-color: lightblue",
+        "2 - 4": "background-color: lightgreen",
+        "3 - 1": "background-color: lightblue",
+        "3 - 2": "background-color: lightgreen",
+        "3 - 3": "background-color: lightblue",
+        "4 - 4": "background-color: lightgreen",
+        "4 - 1": "background-color: lightblue",
+        "4 - 2": "background-color: lightgreen",
+        "4 - 3": "background-color: lightblue",
+        "4 - 4": "background-color: lightgreen",
+    }
+
+    # Function to apply the color coding
+    def highlight_semester(row):
+        return [color_map.get(row['Semester'], "") for _ in row]
+
+    # Apply the style
+    styled_df = df.style.apply(highlight_semester, axis=1)
+    return styled_df
 
 # Main app logic
 db_path = 'ece.db'  # Change this to your database path
