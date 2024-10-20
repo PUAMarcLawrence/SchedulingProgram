@@ -60,7 +60,7 @@ def load_subjects_from_db(db_path, table_name):
 def build_subject_graph(subjects):
     dot = gv.Digraph()
     dot.attr(splines='true')
-    dot.attr(rankdir='LR', size='10,5', nodesep='0.1', ranksep='0.5', dpi='70')
+    dot.attr(rankdir='LR', size='10,5', nodesep='0.1', ranksep='0.51', dpi='70')
     
     for semester, semester_subjects in subjects.items():
         with dot.subgraph() as s:
