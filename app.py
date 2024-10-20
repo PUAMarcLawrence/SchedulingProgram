@@ -66,7 +66,7 @@ def build_subject_graph(subjects):
         with dot.subgraph() as s:
             s.attr(rank='same')
             for subject, details in semester_subjects.items():
-                s.node(subject, subject, shape='box', style='rounded', fontsize='10', width='0.001', height='0.0001')
+                s.node(subject, subject, shape='box', style='rounded', fontsize='15', width='0.001', height='0.0001')
 
                 # Add edges for prerequisites, controlling their port positions
                 for prereq in details['prerequisites']:
@@ -105,7 +105,7 @@ def format_subjects_for_legend(subjects):
         "3 - 1": "background-color: lightblue",
         "3 - 2": "background-color: lightgreen",
         "3 - 3": "background-color: lightblue",
-        "4 - 4": "background-color: lightgreen",
+        "3 - 4": "background-color: lightgreen",
         "4 - 1": "background-color: lightblue",
         "4 - 2": "background-color: lightgreen",
         "4 - 3": "background-color: lightblue",
@@ -125,7 +125,7 @@ db_path = 'ece.db'  # Change this to your database path
 tables = get_table_names(db_path)
 
 if tables:
-    selected_table = st.selectbox("Select a table:", tables)
+    selected_table = st.selectbox("Select a table:", tables,index=tables.index('ECE2021'))
 
     subjects = load_subjects_from_db(db_path, selected_table)
 
