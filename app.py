@@ -64,24 +64,24 @@ def build_subject_graph(subjects):
 
     # Define color map for semesters (you can customize these colors)
     semester_color_map = {
-        "1 - 2": "#ff5733",
-        "1 - 3": "#e31a1c",
-        "1 - 4": "#ff5733",
+        "1 - 2": "#ff0000",
+        "1 - 3": "#00ff00",
+        "1 - 4": "#ff00ff",
 
-        "2 - 1": "#6a3d9a",
-        "2 - 2": "#ff7f00",
-        "2 - 3": "#b15928",
-        "2 - 4": "#fdbf6f",
+        "2 - 1": "#ffff00",
+        "2 - 2": "#00ffff",
+        "2 - 3": "#9900ff",
+        "2 - 4": "#ff9900",
 
-        "3 - 1": "#6a3d9a",
-        "3 - 2": "#ff7f00",
-        "3 - 3": "#b15928",
-        "3 - 4": "#fdbf6f",
+        "3 - 1": "#ff0099",
+        "3 - 2": "#33cc33",
+        "3 - 3": "#ff3300",
+        "3 - 4": "black",
 
-        "4 - 1": "#6a3d9a",
-        "4 - 2": "#ff7f00",
-        "4 - 3": "#b15928",
-        "4 - 4": "#fdbf6f",
+        "4 - 1": "#cc3300",
+        "4 - 2": "#ffff00",
+        "4 - 3": "#00ffff",
+        "4 - 4": "black",
         # Add more semesters and colors as needed
     }
 
@@ -91,7 +91,7 @@ def build_subject_graph(subjects):
         with dot.subgraph() as s:
             s.attr(rank='same')
             for subject, details in semester_subjects.items():
-                s.node(subject, subject, shape='box', style='rounded', fontsize='10', width='0.001', height='0.0001')
+                s.node(subject, subject, shape='box', style='rounded,filled', fontsize='10', width='0.001', height='0.0001', fillcolor="white")
 
                 # Add edges for prerequisites, using color coding based on the semester
                 for prereq in details['prerequisites']:
