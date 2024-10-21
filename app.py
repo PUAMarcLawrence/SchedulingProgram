@@ -56,27 +56,53 @@ def load_subjects_from_db(db_path, table_name):
     
     return subjects
 
-# Function to build the subject graph with Graphviz
+# Function to build the subject graph with color-coded edges
 def build_subject_graph(subjects):
     dot = gv.Digraph()
     dot.attr(splines='true')
     dot.attr(rankdir='LR', size='10,5', nodesep='0.1', ranksep='0.51', dpi='70')
-    
+
+    # Define color map for semesters (you can customize these colors)
+    semester_color_map = {
+        "1 - 2": "#ff5733",
+        "1 - 3": "#e31a1c",
+        "1 - 4": "#ff5733",
+
+        "2 - 1": "#6a3d9a",
+        "2 - 2": "#ff7f00",
+        "2 - 3": "#b15928",
+        "2 - 4": "#fdbf6f",
+
+        "3 - 1": "#6a3d9a",
+        "3 - 2": "#ff7f00",
+        "3 - 3": "#b15928",
+        "3 - 4": "#fdbf6f",
+
+        "4 - 1": "#6a3d9a",
+        "4 - 2": "#ff7f00",
+        "4 - 3": "#b15928",
+        "4 - 4": "#fdbf6f",
+        # Add more semesters and colors as needed
+    }
+
     for semester, semester_subjects in subjects.items():
+        semester_color = semester_color_map.get(semester, "black")  # Default to black if no color is defined
+
         with dot.subgraph() as s:
             s.attr(rank='same')
             for subject, details in semester_subjects.items():
-                s.node(subject, subject, shape='box', style='rounded', fontsize='15', width='0.001', height='0.0001')
+                s.node(subject, subject, shape='box', style='rounded', fontsize='10', width='0.001', height='0.0001')
 
-                # Add edges for prerequisites, controlling their port positions
+                # Add edges for prerequisites, using color coding based on the semester
                 for prereq in details['prerequisites']:
-                    dot.edge(f"{prereq}:e", f"{subject}:w")  # 'e' is east, 'w' is west
+                    dot.edge(f"{prereq}:e", f"{subject}:w", color=semester_color)  # Color-coded edge for prerequisites
 
-                # Add edges for corequisites
+                # Add edges for corequisites, using a dashed blue line and color-coding for other edges
                 for coreq in details['corequisites']:
-                    dot.edge(coreq, subject, style='dashed', dir='none', constraint="false", color='blue')
+                    dot.edge(coreq, subject, style='dashed', dir='none', color='#0082c8',penwidth='3')  # Color-coded corequisites
 
     return dot
+
 
 
 # Function to format subjects for legend, including Title and color coding
@@ -125,7 +151,7 @@ db_path = 'ece.db'  # Change this to your database path
 tables = get_table_names(db_path)
 
 if tables:
-    selected_table = st.selectbox("Select a table:", tables,index=tables.index('ECE2021'))
+    selected_table = st.selectbox("Select a curriculum:", tables,index=tables.index('ECE2021'))
 
     subjects = load_subjects_from_db(db_path, selected_table)
 
