@@ -175,7 +175,7 @@ def display_graph_with_fullscreen_option(net, file_path="subject_graph.html"):
     
     # Display the graph in Streamlit
     with open(file_path, "r") as f:
-        components.html(f.read(), height=750, width=800, scrolling=True)
+        components.html(f.read(), height=750, scrolling=True)
     
     # Add a button to open the graph in a new tab for full-screen mode
     if st.button("View Full Screen"):
