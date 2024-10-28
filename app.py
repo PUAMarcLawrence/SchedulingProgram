@@ -2,7 +2,6 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 from pyvis.network import Network
-import streamlit.components.v1 as components
 
 # Function to retrieve all table names in the database
 def get_table_names(db_path):
@@ -47,7 +46,7 @@ def load_subjects_from_db(db_path, table_name):
     return subjects
 
 def build_subject_graph_interactive(subjects):
-    net = Network(height="750px", width="100%", bgcolor="#ffffff", font_color="black", directed=True)
+    net = Network(height="600px", width="100%", bgcolor="#ffffff", font_color="black", directed=True)
     
     # Set hierarchical layout options for vertical alignment
     net.set_options("""
@@ -66,7 +65,7 @@ def build_subject_graph_interactive(subjects):
         },
         "physics": {
             "hierarchicalRepulsion": {
-                "centralGravity": 2
+                "centralGravity": 5
             },
             "minVelocity": 0.75,
             "solver": "hierarchicalRepulsion"
@@ -75,10 +74,10 @@ def build_subject_graph_interactive(subjects):
 
     # Define a color map for semesters (customize colors as needed)
     semester_color_map = {
-        "1 - 1": "#800000", "1 - 2": "#FF0000", "1 - 3": "#FF4500", "1 - 4": "#FF6347",
-        "2 - 1": "#006400", "2 - 2": "#008000", "2 - 3": "#00FF00", "2 - 4": "#ADFF2F",
-        "3 - 1": "#00008B", "3 - 2": "#0000FF", "3 - 3": "#6A5ACD", "3 - 4": "#00BFFF",
-        "4 - 1": "#ffffcc", "4 - 2": "#ffff99", "4 - 3": "#ffff66", "4 - 4": "#ffff33"
+        "1 - 1": "#800000", "1 - 2": "#FF0000", "1 - 3": "#FF4500", "1 - 4": "#A9A9A9",
+        "2 - 1": "#006400", "2 - 2": "#008000", "2 - 3": "#00FF00", "2 - 4": "#696969",
+        "3 - 1": "#00008B", "3 - 2": "#0000FF", "3 - 3": "#6A5ACD", "3 - 4": "#2F4F4F",
+        "4 - 1": "#A9A9A9", "4 - 2": "#696969", "4 - 3": "#2F4F4F", "4 - 4": "#000000"
     }
 
     # Step 1: Add nodes with level based on semester
@@ -127,14 +126,14 @@ def build_subject_graph_interactive(subjects):
         # level = int(semester.replace(" - ",""))  # Determine level by the year part of "Year - Term"
         for subject in semester_subjects.keys():
             # Set the node level to ensure vertical alignment
-            net.add_node(subject, label=subject, color=semester_color, level=level)
+            net.add_node(subject, label=subject, labelHighlightBold=True, color=semester_color, level=level)
 
     # Step 2: Add edges for prerequisites and corequisites
     for semester, semester_subjects in subjects.items():
         for subject, details in semester_subjects.items():
             for prereq in details['prerequisites']:
                 if prereq in all_subjects:
-                    net.add_edge(prereq, subject, color=semester_color_map.get(semester, "black"))
+                    net.add_edge(prereq, subject, color=semester_color_map.get(semester, "black"),width=2)
             for coreq in details['corequisites']:
                 if coreq in all_subjects:
                     net.add_edge(coreq, subject, color="#0082c8", width=3, dashes=True)
@@ -166,41 +165,24 @@ def format_subjects_for_legend(subjects):
         "4 - 3": "background-color: lightblue", "4 - 4": "background-color: lightgreen",
     }
 
-    return df.style.map(lambda _: color_map.get(_, ""), subset=['Semester'])
+    def highlight_semester(row):
+            return [color_map.get(row['Semester'], "") for _ in row]
 
-# Function to display the graph in the app with a full-screen option
-def display_graph_with_fullscreen_option(net, file_path="subject_graph.html"):
-    # Save the graph to an HTML file
-    net.save_graph(file_path)
-    
-    # Display the graph in Streamlit
-    with open(file_path, "r") as f:
-        components.html(f.read(), height=750, scrolling=True)
-    
-    # Add a button to open the graph in a new tab for full-screen mode
-    if st.button("View Full Screen"):
-        js_code = f"""
-        <script>
-            window.open("{file_path}", "_blank");
-        </script>
-        """
-        st.markdown(js_code, unsafe_allow_html=True)
+    styled_df = df.style.apply(highlight_semester, axis=1)
+    return styled_df
 
-# Example usage
-db_path = 'ece.db'  # Change this to your database path
+# Main app logic
+db_path = 'ece.db'
 tables = get_table_names(db_path)
-
+st.set_page_config(layout="wide")  # Optional: Expands Streamlit to full width
 if tables:
     selected_table = st.selectbox("Select a curriculum:", tables, index=tables.index('ECE2021'))
     subjects = load_subjects_from_db(db_path, selected_table)
 
     if subjects:
         net = build_subject_graph_interactive(subjects)
-        
-        # Display the graph with a full-screen option
-        display_graph_with_fullscreen_option(net)
-        
-        # Display the subjects table as a legend, including Title
+        st.components.v1.html(net.generate_html(), height=600)
+
         legend_df = format_subjects_for_legend(subjects)
         st.subheader(f"Subjects and Requirements from {selected_table}")
         st.table(legend_df)
