@@ -52,7 +52,7 @@ def build_subject_graph_interactive(subjects):
     net.set_options("""
     {
         "edges": {
-            "color": {"inherit": false},
+            "color": {"inherit": true},
             "smooth": true
         },
         "layout": {
@@ -144,32 +144,23 @@ def build_subject_graph_interactive(subjects):
 
 # Format subjects for legend with Title and color coding
 def format_subjects_for_legend(subjects):
-    legend_data = []
+    semester_tables = {}
+    
     for semester, semester_subjects in subjects.items():
+        legend_data = []
         for subject, details in semester_subjects.items():
             title = details['title']
             prerequisites = ', '.join(details['prerequisites']) if details['prerequisites'] else "None"
             corequisites = ', '.join(details['corequisites']) if details['corequisites'] else "None"
-            legend_data.append([semester, subject, title, prerequisites, corequisites])
+            legend_data.append([subject, title, prerequisites, corequisites])
 
-    df = pd.DataFrame(legend_data, columns=["Semester", "Subject Code", "Title", "Prerequisites", "Co-requisites"])
+        df = pd.DataFrame(legend_data, columns=["Subject Code", "Title", "Prerequisites", "Co-requisites"])
 
-    color_map = {
-        "1 - 1": "background-color: lightblue", "1 - 2": "background-color: lightgreen",
-        "1 - 3": "background-color: lightblue", "1 - 4": "background-color: lightgreen",
-        "2 - 1": "background-color: lightblue", "2 - 2": "background-color: lightgreen",
-        "2 - 3": "background-color: lightblue", "2 - 4": "background-color: lightgreen",
-        "3 - 1": "background-color: lightblue", "3 - 2": "background-color: lightgreen",
-        "3 - 3": "background-color: lightblue", "3 - 4": "background-color: lightgreen",
-        "4 - 1": "background-color: lightblue", "4 - 2": "background-color: lightgreen",
-        "4 - 3": "background-color: lightblue", "4 - 4": "background-color: lightgreen",
-    }
+        # Create a DataFrame for the semester
+        df = pd.DataFrame(legend_data, columns=["Subject Code", "Title", "Prerequisites", "Co-requisites"])
+        semester_tables[semester] = df  # Store DataFrame in a dictionary with semester as the key
 
-    def highlight_semester(row):
-            return [color_map.get(row['Semester'], "") for _ in row]
-
-    styled_df = df.style.apply(highlight_semester, axis=1)
-    return styled_df
+    return semester_tables
 
 # Main app logic
 db_path = 'ece.db'
@@ -183,8 +174,10 @@ if tables:
         net = build_subject_graph_interactive(subjects)
         st.components.v1.html(net.generate_html(), height=850)
 
-        legend_df = format_subjects_for_legend(subjects)
-        st.subheader(f"Subjects and Requirements from {selected_table}")
-        st.table(legend_df)
+        # Display the subjects table as separate tables for each semester
+        semester_tables = format_subjects_for_legend(subjects)
+        for semester, df in semester_tables.items():
+            st.subheader(f"Subjects and Requirements for {semester}")
+            st.table(df)  # Display each semester's table
 else:
     st.error("No tables found in the database.")
