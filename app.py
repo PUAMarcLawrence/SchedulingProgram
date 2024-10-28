@@ -52,7 +52,7 @@ def build_subject_graph_interactive(subjects):
     net.set_options("""
     {
         "edges": {
-            "color": {"inherit": true},
+            "color": {"inherit": false},
             "smooth": true
         },
         "layout": {
