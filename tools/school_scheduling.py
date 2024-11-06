@@ -5,18 +5,31 @@ from datetime import datetime, timedelta
 import hashlib
 
 # Database setup
-conn = sqlite3.connect('school.db')
+conn = sqlite3.connect('data/school.db')
 c = conn.cursor()
 
 c.execute('''CREATE TABLE IF NOT EXISTS users (
                 username TEXT PRIMARY KEY,
-                password TEXT)''')
+                password TEXT,
+                role TEXT)''')
 
 c.execute('''CREATE TABLE IF NOT EXISTS schedules (
                 class_name TEXT,
                 start_time TEXT,
                 end_time TEXT,
-                days TEXT)''')
+                days TEXT,
+                username TEXT)''')
+
+# If the table already exists, add the role column to users and username column to schedules
+c.execute("PRAGMA table_info(users)")
+columns = [column[1] for column in c.fetchall()]
+if 'role' not in columns:
+    c.execute("ALTER TABLE users ADD COLUMN role TEXT")
+
+c.execute("PRAGMA table_info(schedules)")
+columns = [column[1] for column in c.fetchall()]
+if 'username' not in columns:
+    c.execute("ALTER TABLE schedules ADD COLUMN username TEXT")
 
 conn.commit()
 
@@ -35,7 +48,7 @@ class School:
             start_time += self.class_duration
         return slots
 
-    def add_class(self, class_name, time_slot, days):
+    def add_class(self, class_name, time_slot, days, username):
         if not class_name.strip():
             st.error("Class name cannot be empty.")
             return False
@@ -72,8 +85,8 @@ class School:
                 return False
 
         for day in days_list:
-            c.execute("INSERT INTO schedules (class_name, start_time, end_time, days) VALUES (?, ?, ?, ?)",
-                      (class_name, start_time.strftime("%Y-%m-%d %H:%M:%S"), end_time.strftime("%Y-%m-%d %H:%M:%S"), day))
+            c.execute("INSERT INTO schedules (class_name, start_time, end_time, days, username) VALUES (?, ?, ?, ?, ?)",
+                      (class_name, start_time.strftime("%Y-%m-%d %H:%M:%S"), end_time.strftime("%Y-%m-%d %H:%M:%S"), day, username))
         conn.commit()
         return True
 
@@ -87,7 +100,7 @@ class School:
         return True
 
     def display_schedule(self):
-        c.execute("SELECT * FROM schedules")
+        c.execute("SELECT class_name, start_time, end_time, days, username FROM schedules")
         schedules = c.fetchall()
         if not schedules:
             st.info("No schedules to display.")
@@ -99,7 +112,7 @@ class School:
         for time_slot in self.time_slots:
             df = pd.concat([df, pd.DataFrame([[time_slot] + [""] * (len(columns) - 1)], columns=columns)], ignore_index=True)
 
-        for class_name, start_time, end_time, day in schedules:
+        for class_name, start_time, end_time, day, username in schedules:
             start_time_str = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').strftime('%I:%M %p')
             day_mapping = {
                 "MWF": ["Mon", "Wed", "Fri"],
@@ -107,13 +120,14 @@ class School:
             }
             days_to_display = day_mapping.get(day, [day])
             for display_day in days_to_display:
-                df.loc[df["Time"] == start_time_str, display_day] = class_name
+                display_text = f"{class_name}\n(Added by: {username})"
+                df.loc[df["Time"] == start_time_str, display_day] = display_text
 
-        st.dataframe(df)
+        st.dataframe(df, use_container_width=True, height=425)
 
     def export_schedule_to_excel(self):
         try:
-            c.execute("SELECT class_name, start_time, end_time, days FROM schedules")
+            c.execute("SELECT class_name, start_time, end_time, days, username FROM schedules")
             schedules = c.fetchall()
             if not schedules:
                 st.info("No schedules to export.")
@@ -125,7 +139,7 @@ class School:
             for time_slot in self.time_slots:
                 df = pd.concat([df, pd.DataFrame([[time_slot] + [""] * (len(columns) - 1)], columns=columns)], ignore_index=True)
 
-            for class_name, start_time, end_time, day in schedules:
+            for class_name, start_time, end_time, day, username in schedules:
                 start_time_str = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S').strftime('%I:%M %p')
                 day_mapping = {
                     "MWF": ["Mon", "Wed", "Fri"],
@@ -133,7 +147,8 @@ class School:
                 }
                 days_to_display = day_mapping.get(day, [day])
                 for display_day in days_to_display:
-                    df.loc[df["Time"] == start_time_str, display_day] = class_name
+                    display_text = f"{class_name}\n(Added by: {username})"
+                    df.loc[df["Time"] == start_time_str, display_day] = display_text
 
             file_path = "schedules.xlsx"
             df.to_excel(file_path, index=False)
@@ -142,61 +157,68 @@ class School:
             st.error(f"An error occurred while exporting schedules: {e}")
 
     def list_classes(self):
-        c.execute("SELECT DISTINCT class_name FROM schedules")
+        c.execute("SELECT DISTINCT class_name FROM schedules WHERE username = ?", (st.session_state.username,))
         classes = c.fetchall()
         return [class_name[0] for class_name in classes]
 
     def delete_class(self, class_name):
-        c.execute("DELETE FROM schedules WHERE class_name = ?", (class_name,))
+        if st.session_state.role == "Dean":
+            c.execute("DELETE FROM schedules WHERE class_name = ?", (class_name,))
+        else:
+            c.execute("DELETE FROM schedules WHERE class_name = ? AND username = ?", (class_name, st.session_state.username))
         conn.commit()
         st.success(f"Class '{class_name}' has been deleted from the schedule.")
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-#def register():
-#    username = st.text_input("New Username").lower()
-#    password = st.text_input("New Password", type="password")
-#   if st.button("Register"):
-#        c.execute("SELECT * FROM users WHERE username = ?", (username,))
-#       if c.fetchone():
-#            st.error("Username already exists.")
-#        else:
-#            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hash_password(password)))
-#            conn.commit()
-#            st.success("User registered successfully.")
+def register():
+    c.execute("SELECT COUNT(*) FROM users")
+    user_count = c.fetchone()[0]
+
+    username = st.text_input("Username").lower()
+    password = st.text_input("Password", type="password")
+    role = "Dean" if user_count == 0 else "Subject chair"
+    if st.button("Register"):
+        if not username:
+            st.error("Username cannot be empty")
+        elif not password:
+            st.error("Password cannot be empty")
+        else:
+            c.execute("SELECT * FROM users WHERE username = ?", (username,))
+            if c.fetchone():
+                st.error("Username already exists.")
+            else:
+                c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, hash_password(password), role))
+                conn.commit()
+                st.success(f"User registered successfully as {role}.")
+                st.experimental_set_query_params()
 
 def login():
     username = st.text_input("Username").lower()
     password = st.text_input("Password", type="password")
     if st.button("Login"):
         c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, hash_password(password)))
-        if c.fetchone():
+        user = c.fetchone()
+        if user:
             st.session_state.logged_in = True
-            st.session_state.delete_mode = False  # Initialize delete mode state
+            st.session_state.username = username
+            st.session_state.role = user[2]  # Store the role in session state
+            st.session_state.delete_mode = False
             st.success("Login successful!")
+            st.experimental_set_query_params()
         else:
             st.error("Invalid username or password.")
-    if st.button("Register"):
-        c.execute("SELECT * FROM users WHERE username = ?", (username,))
-        if username == "":
-            st.error("Username cannot be empty")
-        if c.fetchone():
-            st.error("Username already exists.")
-        if password == "":
-            st.error("password cannot be empty")  
-        else:
-            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hash_password(password)))
-            conn.commit()
-            st.success("User registered successfully.")
-            
+
 def main_program():
     school = School()
-
     st.title("School Scheduling Program")
 
     st.sidebar.header("Menu")
-    menu_option = st.sidebar.selectbox("Choose an option", ["Add Class", "Show Schedule", "Export Schedule to Excel", "Delete Class"])
+    if st.session_state.role == "Dean":
+        menu_option = st.sidebar.selectbox("Choose an option", ["Add Class", "Show Schedule", "Export Schedule to Excel", "Delete Class"])
+    else:
+        menu_option = st.sidebar.selectbox("Choose an option", ["Add Class", "Show Schedule", "Export Schedule to Excel", "Delete Class"])
 
     if menu_option == "Add Class":
         st.header("Add a Class")
@@ -205,7 +227,7 @@ def main_program():
         days = st.selectbox("Days", school.days_options)
 
         if st.button("Add Class"):
-            if school.add_class(class_name, time_slot, days):
+            if school.add_class(class_name, time_slot, days, st.session_state.username):
                 st.success(f"Class '{class_name}' scheduled successfully.")
             else:
                 st.error(f"Time slot {time_slot} on {days} is already booked. Please choose a different time.")
@@ -232,6 +254,7 @@ def main_program():
                     school.delete_class(delete_class_name)
                     st.session_state.delete_mode = False  # Exit delete mode after deletion
                     st.experimental_set_query_params(refresh=True)  # Refresh the app to update the schedule display
+                    st.success(f"Class '{delete_class_name}' has been deleted.")
             else:
                 st.info("No classes available to delete.")
 
@@ -240,12 +263,20 @@ if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'delete_mode' not in st.session_state:
     st.session_state.delete_mode = False
+if 'username' not in st.session_state:
+    st.session_state.username = ""
+if 'role' not in st.session_state:
+    st.session_state.role = ""
 
-# Start the program with the login window
+# Start the program with the login or register window
 if not st.session_state.logged_in:
-    st.title("Login")
-    login()
-    # register()
+    st.title("Welcome to the School Scheduling Program")
+    option = st.selectbox("Choose an option", ["Login", "Register"])
+
+    if option == "Login":
+        login()
+    elif option == "Register":
+        register()
 else:
     main_program()
 

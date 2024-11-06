@@ -3,6 +3,8 @@ import sqlite3
 import pandas as pd
 from pyvis.network import Network
 
+# Main app logic
+
 # Function to retrieve all table names in the database
 def get_table_names(db_path):
     try:
@@ -46,7 +48,7 @@ def load_subjects_from_db(db_path, table_name):
     return subjects
 
 def build_subject_graph_interactive(subjects):
-    net = Network(height="800px", width="100%", bgcolor="#ffffff", font_color="black", directed=True)
+    net = Network(height="550px", width="100%", bgcolor="#ffffff", font_color="black", directed=True)
     
     # Set hierarchical layout options for vertical alignment
     net.set_options("""
@@ -162,17 +164,17 @@ def format_subjects_for_legend(subjects):
 
     return semester_tables
 
-# Main app logic
-db_path = 'ece.db'
+
+db_path = 'data/ece.db'
 tables = get_table_names(db_path)
-st.set_page_config(layout="wide")  # Optional: Expands Streamlit to full width
+# st.set_page_config(layout="wide")  # Optional: Expands Streamlit to full width
 if tables:
     selected_table = st.selectbox("Select a curriculum:", tables, index=tables.index('ECE2021'))
     subjects = load_subjects_from_db(db_path, selected_table)
 
     if subjects:
         net = build_subject_graph_interactive(subjects)
-        st.components.v1.html(net.generate_html(), height=850)
+        st.components.v1.html(net.generate_html(), height=560)
 
         # Display the subjects table as separate tables for each semester
         semester_tables = format_subjects_for_legend(subjects)
@@ -182,6 +184,8 @@ if tables:
 else:
     st.error("No tables found in the database.")
 
-st.write(st.session_state["shared"])
+
+
+# st.write(st.session_state["shared"])
 
 
