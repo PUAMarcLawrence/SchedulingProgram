@@ -181,3 +181,7 @@ if tables:
             st.table(df)  # Display each semester's table
 else:
     st.error("No tables found in the database.")
+
+st.write(st.session_state["shared"])
+
+
