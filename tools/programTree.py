@@ -22,7 +22,7 @@ def load_subjects_from_db(db_path, table_name):
     try:
         with sqlite3.connect(db_path) as conn:
             query = f"""
-            SELECT Year, Term, Code, Title, Prerequisites, Co_requisites 
+            SELECT Year, Term, Code, Title, Prerequisites, Co_requisites, [Credit Units]
             FROM "{table_name}";
             """
             rows = conn.execute(query).fetchall()
@@ -32,7 +32,7 @@ def load_subjects_from_db(db_path, table_name):
 
     subjects = {}
     for row in rows:
-        year, term, subject_code, title, prerequisites, corequisites = row
+        year, term, subject_code, title, prerequisites, corequisites, credit_unit= row
         prerequisites = prerequisites.split(',') if prerequisites else []
         corequisites = corequisites.split(',') if corequisites else []
 
@@ -43,7 +43,8 @@ def load_subjects_from_db(db_path, table_name):
         subjects[semester_key][subject_code] = {
             "title": title,
             "prerequisites": [prereq.strip() for prereq in prerequisites],
-            "corequisites": [coreq.strip() for coreq in corequisites]
+            "corequisites": [coreq.strip() for coreq in corequisites],
+            "credit_unit": credit_unit
         }
     return subjects
 
@@ -150,16 +151,20 @@ def format_subjects_for_legend(subjects):
     
     for semester, semester_subjects in subjects.items():
         legend_data = []
+        total=0
         for subject, details in semester_subjects.items():
             title = details['title']
             prerequisites = ', '.join(details['prerequisites']) if details['prerequisites'] else "None"
             corequisites = ', '.join(details['corequisites']) if details['corequisites'] else "None"
-            legend_data.append([subject, title, prerequisites, corequisites])
+            credit_unit = details['credit_unit']
+            total = total + credit_unit
+            legend_data.append([subject, title, prerequisites, corequisites,credit_unit])
+        legend_data.append(['','','','TOTAL',total])
 
-        df = pd.DataFrame(legend_data, columns=["Subject Code", "Title", "Prerequisites", "Co-requisites"])
+        df = pd.DataFrame(legend_data, columns=["Subject Code", "Title", "Prerequisites", "Co-requisites","Credit Units"])
 
         # Create a DataFrame for the semester
-        df = pd.DataFrame(legend_data, columns=["Subject Code", "Title", "Prerequisites", "Co-requisites"])
+        df = pd.DataFrame(legend_data, columns=["Subject Code", "Title", "Prerequisites", "Co-requisites","Credit Units"])
         semester_tables[semester] = df  # Store DataFrame in a dictionary with semester as the key
 
     return semester_tables
@@ -167,9 +172,8 @@ def format_subjects_for_legend(subjects):
 
 db_path = 'data/ece.db'
 tables = get_table_names(db_path)
-# st.set_page_config(layout="wide")  # Optional: Expands Streamlit to full width
 if tables:
-    selected_table = st.selectbox("Select a curriculum:", tables, index=tables.index('ECE2021'))
+    selected_table = st.selectbox("Select a curriculum:", tables, index=tables.index('ECE2024'))
     subjects = load_subjects_from_db(db_path, selected_table)
 
     if subjects:
