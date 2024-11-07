@@ -37,7 +37,7 @@ account_pages = [logout_page, settings]
 tool_pages = [tool_1, tool_2]
 
 
-st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png")
+st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
 # if st.session_state.role in ["Requester", "Admin"]:
