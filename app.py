@@ -11,7 +11,7 @@ if "role" not in st.session_state:
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-ROLES = [None, "Requester", "Responder", "Admin"]
+ROLES = [None, "Subject Chair", "Dean"]
 
 def logout():
     st.session_state['logged_in'] = False
@@ -27,7 +27,7 @@ school_scheduling = st.Page(
     "scheduling/school_scheduling.py",
     title="School Scheduling",
     icon=":material/computer:",
-    default=(role == "Program Chair" or role == "Dean"),
+    default=(role == "Subject Chair" or role == "Dean"),
 )
 
 quickView = st.Page(
@@ -42,21 +42,28 @@ upload_curiculum = st.Page(
     icon=":material/upload:"
 )
 
+settings_programTree = st.Page(
+    "programTree/programTreeSettings.py",
+    title="Settings",
+    icon=":material/settings:"
+)
+
 account_pages = [logout_page, settings]
 scheduling_pages = [school_scheduling]
-programTree_pages = [quickView,upload_curiculum]
+programTree_pages = [quickView,upload_curiculum,settings_programTree]
 
 st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
-if st.session_state.role in ["Program Chair","Dean"]:
+if st.session_state.role in ["Subject Chair","Dean"]:
     page_dict["Scheduling"] = scheduling_pages
-if st.session_state.role in ["Program Chair","Dean"]:
+if st.session_state.role in ["Subject Chair","Dean"]:
     page_dict["Program Tree"] = programTree_pages
 
 if st.session_state['logged_in']: # or len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)
 else:
+    st.title("Welcome to the School Scheduling Program")
     option = st.selectbox("Choose an Option",["Login","Register"])
     match option:
         case "Login":

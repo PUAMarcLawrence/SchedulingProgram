@@ -3,9 +3,10 @@ import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
 import bcrypt
+import io
 
 # Database setup
-conn = sqlite3.connect('school.db')
+conn = sqlite3.connect('data/school.db')
 c = conn.cursor()
 
 c.execute('''CREATE TABLE IF NOT EXISTS users (
@@ -157,11 +158,23 @@ class School:
                     display_text = f"{class_name}"
                     df.loc[df["Time"] == time_slot_str, display_day] = display_text
 
-            file_path = "schedules.xlsx"
-            df.to_excel(file_path, index=False)
-            st.success(f"Schedules exported to {file_path}")
+            # Convert DataFrame to Excel
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False, sheet_name='Schedule')
+            output.seek(0)
+
+            # Create a download button
+            st.download_button(
+                label="Download Schedule as Excel",
+                data=output,
+                file_name="schedules.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            st.success("Schedules exported successfully.")
         except Exception as e:
             st.error(f"An error occurred while exporting schedules: {e}")
+
 
     def list_classes(self):
         if st.session_state.role == "Dean":
@@ -182,52 +195,51 @@ class School:
 def hash_password(password):
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-def register():
-    c.execute("SELECT COUNT(*) FROM users")
-    user_count = c.fetchone()[0]
+# def register():
+#     c.execute("SELECT COUNT(*) FROM users")
+#     user_count = c.fetchone()[0]
 
-    username = st.text_input("Username").lower()
-    password = st.text_input("Password", type="password")
-    color = st.color_picker("Pick a color to represent your account")
-    role = "Dean" if user_count == 0 else "Subject chair"
-    if st.button("Register"):
-        if not username:
-            st.error("Username cannot be empty")
-        elif not password:
-            st.error("Password cannot be empty")
-        elif not color:
-            st.error("Please pick a color")
-        else:
-            c.execute("SELECT * FROM users WHERE username = ?", (username,))
-            if c.fetchone():
-                st.error("Username already exists.")
-            else:
-                hashed_password = hash_password(password)
-                c.execute("INSERT INTO users (username, password, role, color) VALUES (?, ?, ?, ?)", (username, hashed_password, role, color))
-                conn.commit()
-                st.success(f"User registered successfully as {role}.")
-                st.experimental_set_query_params()
+#     username = st.text_input("Username").lower()
+#     password = st.text_input("Password", type="password")
+#     color = st.color_picker("Pick a color to represent your account")
+#     role = "Dean" if user_count == 0 else "Subject Chair"
+#     if st.button("Register"):
+#         if not username:
+#             st.error("Username cannot be empty")
+#         elif not password:
+#             st.error("Password cannot be empty")
+#         elif not color:
+#             st.error("Please pick a color")
+#         else:
+#             c.execute("SELECT * FROM users WHERE username = ?", (username,))
+#             if c.fetchone():
+#                 st.error("Username already exists.")
+#             else:
+#                 hashed_password = hash_password(password)
+#                 c.execute("INSERT INTO users (username, password, role, color) VALUES (?, ?, ?, ?)", (username, hashed_password, role, color))
+#                 conn.commit()
+#                 st.success(f"User registered successfully as {role}.")
+#                 st.experimental_set_query_params()
 
-def login():
-    username = st.text_input("Username").lower()
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        c.execute("SELECT * FROM users WHERE username = ?", (username,))
-        user = c.fetchone()
-        if user and bcrypt.checkpw(password.encode(), user[1].encode()):
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.session_state.role = user[2]  # Store the role in session state
-            st.session_state.color = user[3]  # Store the color in session state
-            st.session_state.delete_mode = False
-            st.success("Login successful!")
-            st.experimental_set_query_params()
-        else:
-            st.error("Invalid username or password.")
+# def login():
+#     username = st.text_input("Username").lower()
+#     password = st.text_input("Password", type="password")
+#     if st.button("Login"):
+#         c.execute("SELECT * FROM users WHERE username = ?", (username,))
+#         user = c.fetchone()
+#         if user and bcrypt.checkpw(password.encode(), user[1].encode()):
+#             st.session_state.logged_in = True
+#             st.session_state.username = username
+#             st.session_state.role = user[2]
+#             st.session_state.color = user[3]
+#             st.session_state.delete_mode = False
+#             st.success("Login successful!")
+#             st.experimental_set_query_params()
+#         else:
+#             st.error("Invalid username or password.")
 
 def main_program():
     school = School()
-    st.set_page_config(layout="wide")
     st.title("School Scheduling Program")
 
     st.sidebar.header("Menu")
@@ -260,8 +272,7 @@ def main_program():
 
     elif menu_option == "Export Schedule to Excel":
         st.header("Export Schedule to Excel")
-        if st.button("Export"):
-            school.export_schedule_to_excel()
+        school.export_schedule_to_excel()
 
     elif menu_option == "Delete Class":
         st.header("Delete a Class")
@@ -274,8 +285,8 @@ def main_program():
                 delete_class_name = st.selectbox("Select Class to Delete", classes)
                 if st.button("Confirm Delete"):
                     school.delete_class(delete_class_name)
-                    st.session_state.delete_mode = False  # Exit delete mode after deletion
-                    st.experimental_set_query_params(refresh=True)  # Refresh the app to update the schedule display
+                    st.session_state.delete_mode = False
+                    st.experimental_set_query_params(refresh=True)
                     st.success(f"Class '{delete_class_name}' has been deleted.")
             else:
                 st.info("No classes available to delete.")
@@ -292,17 +303,7 @@ if 'role' not in st.session_state:
 if 'color' not in st.session_state:
     st.session_state.color = ""
 
-# Start the program with the login or register window
-if not st.session_state.logged_in:
-    st.title("Welcome to the School Scheduling Program")
-    option = st.selectbox("Choose an option", ["Login", "Register"])
-
-    if option == "Login":
-        login()
-    elif option == "Register":
-        register()
-else:
-    main_program()
+main_program()
 
 # Close the database connection when the program ends
 conn.close()

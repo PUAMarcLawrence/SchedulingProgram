@@ -2,7 +2,7 @@
 import sqlite3
 import hashlib
 
-userAddrDB = 'data/users.db'
+userAddrDB = 'data/school.db'
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()

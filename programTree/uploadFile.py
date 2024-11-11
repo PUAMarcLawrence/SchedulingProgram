@@ -1,5 +1,8 @@
 import streamlit as st
 import os
+import pandas as pd
+from datetime import datetime
+from utils.db_utils import upload_to_sqlite
 
 # Set the name of the template file
 template_file_name = "template/Curiculum.xlsx"
@@ -23,3 +26,27 @@ if os.path.exists(template_file_name):
         )
 else:
     st.error(f"Template file '{template_file_name}' not found in the program directory.")
+
+uploaded_file = st.file_uploader(
+    "Choose a xlsx file", 
+    accept_multiple_files=False,
+    type=["xlsx","xls"]
+)
+if uploaded_file is not None:
+    program = st.selectbox("Choose a Program",st.session_state['editable_list'])
+    years = list(range(datetime.now().year - 15, datetime.now().year + 15))
+    selected_year = st.selectbox("Select Year:", years, index=len(years) - 1)
+    if st.button("Upload Curiculum"):
+        if upload_to_sqlite(uploaded_file,program,str(selected_year)):
+           st.write("Uploaded")
+        else:
+            st.eror("Data Upload Failed")
+    # Load data from the uploaded Excel file
+    try:
+        data = pd.read_excel(uploaded_file)
+        # Display data preview
+        st.write("Preview of Excel data:")
+        st.dataframe(data)
+    except Exception as e:
+        st.error(f"Error reading Excel file: {e}")
+    
