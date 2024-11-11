@@ -33,9 +33,10 @@ uploaded_file = st.file_uploader(
     type=["xlsx","xls"]
 )
 if uploaded_file is not None:
-    program = st.selectbox("Choose a Program",st.session_state['editable_list'])
+    prog_select,year_select = st.columns(2)
+    program = prog_select.selectbox("Choose a Program",st.session_state['editable_list'])
     years = list(range(datetime.now().year - 15, datetime.now().year + 15))
-    selected_year = st.selectbox("Select Year:", years, index=len(years) - 1)
+    selected_year = year_select.selectbox("Select Year:", years, index=len(years) - 1)
     if st.button("Upload Curiculum"):
         if upload_to_sqlite(uploaded_file,program,str(selected_year)):
            st.write("Uploaded")

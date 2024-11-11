@@ -7,6 +7,7 @@ from utils.auth_utils import hash_password
 userAddrDB = 'data/school.db'
 eceAddrDB = 'data/ece.db'
 progDB = 'data/programs.db'
+
 # initialize creation of users db
 def create_user_table():
     conn = sqlite3.connect(userAddrDB)
@@ -141,5 +142,17 @@ def upload_to_sqlite(file_path,program,year):
         return False
     
     # Close the connection
+    conn.close()
+    return True
+
+def del_curiculum_db(table):
+    # Connect to the SQLite database
+    conn = sqlite3.connect(eceAddrDB)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DROP TABLE {table}")
+    except Exception as e:
+        conn.close()
+        return False
     conn.close()
     return True

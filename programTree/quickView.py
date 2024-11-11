@@ -126,7 +126,7 @@ def format_subjects_for_legend(subjects):
 
 tables = get_table_names()
 if tables:
-    selected_table = st.selectbox("Select a curriculum:", tables, index=tables.index('ECE2024'))
+    selected_table = st.selectbox("Select a curriculum:", tables)
     subjects = load_subjects_from_db(selected_table)
 
     if subjects:
