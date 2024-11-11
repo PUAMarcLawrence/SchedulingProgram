@@ -23,22 +23,28 @@ role = st.session_state.role
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
 
-tool_1 = st.Page(
-    "tools/school_scheduling.py",
+school_scheduling = st.Page(
+    "scheduling/school_scheduling.py",
     title="School Scheduling",
     icon=":material/computer:",
     default=(role == "Program Chair" or role == "Dean"),
 )
 
 quickView = st.Page(
-    "tools/programTree.py",
+    "programTree/quickView.py",
     title="Quick View",
     icon=":material/account_tree:",
 )
 
+upload_curiculum = st.Page(
+    "programTree/uploadFile.py",
+    title="Upload Curiculum",
+    icon=":material/upload:"
+)
+
 account_pages = [logout_page, settings]
-scheduling_pages = [tool_1]
-programTree_pages = [quickView]
+scheduling_pages = [school_scheduling]
+programTree_pages = [quickView,upload_curiculum]
 
 st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
