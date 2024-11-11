@@ -1,9 +1,7 @@
-# Login form component
+# Login form components
 import streamlit as st
 from utils.db_utils import create_user
 from utils.auth_utils import check_login, hash_password, user_counts
-
-ROLES = [None,"Program Chair","Dean","Admin"]
 
 def login():
     st.title("Login")
@@ -11,13 +9,14 @@ def login():
     password = st.text_input("Password", type="password")
     if st.button("Login"):
         if check_login(username, password):
-            st.session_state.logged_in = True
+            st.session_state['logged_in'] = True
             st.session_state.username = username
             st.session_state.role = check_login(username,password)[2]  # Store the role in session state
             st.session_state.delete_mode = False
             st.success("Logged in successfully!")
         else:
             st.error("Invalid username or password")
+        st.rerun()
 
 def register():
     user_count = user_counts()
@@ -37,3 +36,4 @@ def register():
                 st.error("Passwords do not match. Please try again.")
         else:
             st.error("All fields are required.")
+        st.rerun()

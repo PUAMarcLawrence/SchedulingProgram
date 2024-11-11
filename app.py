@@ -1,19 +1,22 @@
 import streamlit as st
-from components.login_component import login,register
+from components.login_component import login, register
 from utils.db_utils import create_user_table
 
-st.set_page_config(layout="wide")
-if "role" not in st.session_state:
-    st.session_state.role = None
-
 create_user_table()
+st.set_page_config(layout="wide")
 
-ROLES = [None, "Program Chair", "Dean"]
+if "role" not in st.session_state:
+    st.session_state['role'] = None
+
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+
+ROLES = [None, "Requester", "Responder", "Admin"]
 
 def logout():
+    st.session_state['logged_in'] = False
     st.session_state.role = None
     st.rerun()
-
 
 role = st.session_state.role
 
@@ -27,134 +30,91 @@ tool_1 = st.Page(
     default=(role == "Program Chair" or role == "Dean"),
 )
 
-tool_2 = st.Page(
+quickView = st.Page(
     "tools/programTree.py",
-    title="Program Tree",
+    title="Quick View",
     icon=":material/account_tree:",
 )
 
 account_pages = [logout_page, settings]
-tool_pages = [tool_1, tool_2]
-
+scheduling_pages = [tool_1]
+programTree_pages = [quickView]
 
 st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
-# if st.session_state.role in ["Requester", "Admin"]:
-#     page_dict["Request"] = request_pages
-if st.session_state.role in ["Program Chair", "Dean"]:
-    page_dict["Tools"] = tool_pages
-# if st.session_state.role == "Dean":
-#     page_dict["Dean"] = admin_pages
+if st.session_state.role in ["Program Chair","Dean"]:
+    page_dict["Scheduling"] = scheduling_pages
+if st.session_state.role in ["Program Chair","Dean"]:
+    page_dict["Program Tree"] = programTree_pages
 
-if len(page_dict) > 0:
+if st.session_state['logged_in']: # or len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)
-    pg.run()
 else:
-    st.title("Welcome to the School Scheduling Program")
-    option = st.selectbox("Choose an option", ["Login", "Register"])
+    option = st.selectbox("Choose an Option",["Login","Register"])
+    match option:
+        case "Login":
+            pg = st.navigation([st.Page(login)])
+        case "Register":
+            pg = st.navigation([st.Page(register)])
 
-    if option == "Login":
-        login()
-    elif option == "Register":
-        register()
+pg.run()
 
-
-
-# import yaml
 # import streamlit as st
-# from yaml.loader import SafeLoader
-# import streamlit_authenticator as stauth
-# from streamlit_authenticator.utilities import CredentialsError,ForgotError,Hasher,LoginError,RegisterError,ResetError,UpdateError
+# import streamlit.components.v1 as components
+# import hashlib
+# import time
 
-# # Loading config file
-# with open('./config.yaml', 'r', encoding='utf-8') as file:
-#     config = yaml.load(file, Loader=SafeLoader)
+# # Function to handle login
+# def login(username, password):
+#     # Dummy credentials
+#     if username == "admin" and password == "password":
+#         # Set a secure hash as a token for demonstration purposes
+#         token = hashlib.sha256(f"{username}{time.time()}".encode()).hexdigest()
+#         st.session_state['token'] = token
+#         # Set a cookie for login persistence
+#         components.html(f"<script>document.cookie = 'token={token};path=/'</script>")
+#         return True
+#     return False
 
-# #Creating the authenticator object
-# authenticator = stauth.Authenticate(
-#     config['credentials'],
-#     config['cookie']['name'],
-#     config['cookie']['key'],
-#     config['cookie']['expiry_days']
-# )
+# # Check if there's a saved token in cookies
+# def check_token():
+#     token = st.session_state.get('token', None)
+#     if token:
+#         # Use your backend to verify if the token is valid here
+#         return True
+#     return False
 
-# # Creating a login widget
-# try:
-#     authenticator.login()
-# except LoginError as e:
-#     st.error(e)
+# # Logout function
+# def logout():
+#     st.session_state['token'] = None
+#     # Clear the cookie
+#     components.html("<script>document.cookie = 'token=; Max-Age=0; path=/'</script>")
+#     st.rerun()
 
-# # Creating a guest login button
-# try:
-#     authenticator.experimental_guest_login('Login with Google', provider='google',
-#                                             oauth2=config['oauth2'])
-#     authenticator.experimental_guest_login('Login with Microsoft', provider='microsoft',
-#                                             oauth2=config['oauth2'])
-# except LoginError as e:
-#     st.error(e)
+# # Display the login form
+# def show_login():
+#     st.title("Login Page")
+#     username = st.text_input("Username")
+#     password = st.text_input("Password", type="password")
+#     login_button = st.button("Login")
 
-# # Authenticating user
-# if st.session_state['authentication_status']:
-#     authenticator.logout()
-#     st.write(f'Welcome *{st.session_state["name"]}*')
-#     st.title('Some content')
-# elif st.session_state['authentication_status'] is False:
-#     st.error('Username/password is incorrect')
-# elif st.session_state['authentication_status'] is None:
-#     st.warning('Please enter your username and password')
+#     if login_button:
+#         if login(username, password):
+#             st.success("Login successful!")
+#             st.rerun()
+#         else:
+#             st.error("Invalid username or password")
 
-# # Creating a password reset widget
-# if st.session_state['authentication_status']:
-#     try:
-#         if authenticator.reset_password(st.session_state['username']):
-#             st.success('Password modified successfully')
-#     except (CredentialsError, ResetError) as e:
-#         st.error(e)
+# # Main app
+# def show_main_app():
+#     st.title("Main Application")
+#     st.write("Welcome to the main application page.")
+#     if st.button("Logout"):
+#         logout()
 
-# # Creating a new user registration widget
-# try:
-#     (email_of_registered_user,
-#         username_of_registered_user,
-#         name_of_registered_user) = authenticator.register_user()
-#     if email_of_registered_user:
-#         st.success('User registered successfully')
-# except RegisterError as e:
-#     st.error(e)
-
-# # Creating a forgot password widget
-# try:
-#     (username_of_forgotten_password,
-#         email_of_forgotten_password,
-#         new_random_password) = authenticator.forgot_password()
-#     if username_of_forgotten_password:
-#         st.success('New password sent securely')
-#         # Random password to be transferred to the user securely
-#     elif not username_of_forgotten_password:
-#         st.error('Username not found')
-# except ForgotError as e:
-#     st.error(e)
-
-# # Creating a forgot username widget
-# try:
-#     (username_of_forgotten_username,
-#         email_of_forgotten_username) = authenticator.forgot_username()
-#     if username_of_forgotten_username:
-#         st.success('Username sent securely')
-#         # Username to be transferred to the user securely
-#     elif not username_of_forgotten_username:
-#         st.error('Email not found')
-# except ForgotError as e:
-#     st.error(e)
-
-# # Creating an update user details widget
-# if st.session_state['authentication_status']:
-#     try:
-#         if authenticator.update_user_details(st.session_state['username']):
-#             st.success('Entry updated successfully')
-#     except UpdateError as e:
-#         st.error(e)
-
-# # Saving config file
-# with open('../config.yaml', 'w', encoding='utf-8') as file:
-#     yaml.dump(config, file, default_flow_style=False)
+# # Application logic
+# if check_token():
+#     show_main_app()
+# else:
+#     show_login()
