@@ -42,6 +42,12 @@ upload_curiculum = st.Page(
     icon=":material/upload:"
 )
 
+sandbox_programTree = st.Page(
+    "programTree/sandBoxTree.py",
+    title="SandBox",
+    icon=":material/handyman:"
+)
+
 settings_programTree = st.Page(
     "programTree/programTreeSettings.py",
     title="Settings",
@@ -50,7 +56,7 @@ settings_programTree = st.Page(
 
 account_pages = [logout_page, settings]
 scheduling_pages = [school_scheduling]
-programTree_pages = [quickView,upload_curiculum,settings_programTree]
+programTree_pages = [quickView,upload_curiculum,sandbox_programTree,settings_programTree]
 
 st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
@@ -60,7 +66,7 @@ if st.session_state.role in ["Subject Chair","Dean"]:
 if st.session_state.role in ["Subject Chair","Dean"]:
     page_dict["Program Tree"] = programTree_pages
 
-if st.session_state['logged_in']: # or len(page_dict) > 0 :
+if st.session_state['logged_in'] and len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)
 else:
     st.title("Welcome to the School Scheduling Program")

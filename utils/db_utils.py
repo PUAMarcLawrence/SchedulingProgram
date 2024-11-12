@@ -100,6 +100,9 @@ def programs_to_list():
     # Connect to SQLite database
     conn = sqlite3.connect(progDB)
     cursor = conn.cursor()
+
+    # Create table (if it doesn't already exist)
+    cursor.execute("CREATE TABLE IF NOT EXISTS programs (id INTEGER PRIMARY KEY, item TEXT)")
     
     # Retrieve all items from the table
     cursor.execute("SELECT item FROM programs")
