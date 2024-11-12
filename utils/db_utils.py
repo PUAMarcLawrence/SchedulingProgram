@@ -6,7 +6,8 @@ from utils.auth_utils import hash_password
 
 userAddrDB = 'data/school.db'
 eceAddrDB = 'data/ece.db'
-progDB = 'data/programs.db'
+progAddrDB = 'data/programs.db'
+sandAddrDB = 'data/sandBox.db'
 
 # initialize creation of users db
 def create_user_table():
@@ -80,7 +81,7 @@ def load_subjects_from_db(table_name):
 
 def programs_to_db(data_list):
     # Connect to SQLite database (or create it)
-    conn = sqlite3.connect(progDB)
+    conn = sqlite3.connect(progAddrDB)
     cursor = conn.cursor()
     
     # Create table (if it doesn't already exist)
@@ -98,12 +99,12 @@ def programs_to_db(data_list):
 
 def programs_to_list():
     # Connect to SQLite database
-    conn = sqlite3.connect(progDB)
+    conn = sqlite3.connect(progAddrDB)
     cursor = conn.cursor()
 
     # Create table (if it doesn't already exist)
     cursor.execute("CREATE TABLE IF NOT EXISTS programs (id INTEGER PRIMARY KEY, item TEXT)")
-    
+
     # Retrieve all items from the table
     cursor.execute("SELECT item FROM programs")
     data_list = [row[0] for row in cursor.fetchall()]
@@ -159,3 +160,16 @@ def del_curiculum_db(table):
         return False
     conn.close()
     return True
+
+# initialize creation of users db
+def create_sandbox_table():
+    conn = sqlite3.connect(sandAddrDB)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+              username TEXT PRIMARY KEY, 
+              password TEXT, 
+              role TEXT, 
+              color Text)''')
+    
+    conn.commit()
+    conn.close()
