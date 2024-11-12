@@ -162,8 +162,24 @@ def del_curiculum_db(table):
 
 def create_sandTable(table_name,template):
 
-    sandAddrDB = 'data/'+ st.session_state.username + '_sandBox'
+    sandAddrDB = 'data/'+ st.session_state.username + '_sandBox.db'
     conn = sqlite3.connect(sandAddrDB)
-
-    conn.execute(f'CREATE TABLE IF NOT EXISTS {table_name}')
+    conn.execute('''CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY, 
+                password TEXT, 
+                role TEXT, 
+                color Text)''')
     conn.close()
+
+# Function to retrieve all table names in the database
+def get_sandTable_names():
+    try:
+        sandAddrDB = 'data/'+ st.session_state.username + '_sandBox.db'
+        with sqlite3.connect(sandAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = [row[0] for row in cursor.fetchall()]
+        return tables
+    except sqlite3.Error as e:
+        st.error(f"Database connection error: {e}")
+        return []
