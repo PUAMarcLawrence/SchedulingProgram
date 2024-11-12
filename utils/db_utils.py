@@ -7,7 +7,6 @@ from utils.auth_utils import hash_password
 userAddrDB = 'data/school.db'
 eceAddrDB = 'data/ece.db'
 progAddrDB = 'data/programs.db'
-sandAddrDB = 'data/sandBox.db'
 
 # initialize creation of users db
 def create_user_table():
@@ -161,15 +160,10 @@ def del_curiculum_db(table):
     conn.close()
     return True
 
-# initialize creation of users db
-def create_sandbox_table():
+def create_sandTable(table_name,template):
+
+    sandAddrDB = 'data/'+ st.session_state.username + '_sandBox'
     conn = sqlite3.connect(sandAddrDB)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users (
-              username TEXT PRIMARY KEY, 
-              password TEXT, 
-              role TEXT, 
-              color Text)''')
-    
-    conn.commit()
+
+    conn.execute(f'CREATE TABLE IF NOT EXISTS {table_name}')
     conn.close()
