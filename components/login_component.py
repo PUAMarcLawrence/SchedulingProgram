@@ -16,9 +16,10 @@ def login():
             st.session_state.color = check_login(username,password)[3] # Store the role color
             st.session_state.delete_mode = False
             st.success("Logged in successfully!")
+            time.sleep(1)
+            st.rerun()
         else:
             st.error("Invalid username or password")
-        time.sleep(1)
         st.rerun()
 
 def register():

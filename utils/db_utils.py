@@ -164,7 +164,7 @@ def create_sandTable(table_name,template):
 
     sandAddrDB = 'data/'+ st.session_state.username + '_sandBox.db'
     conn = sqlite3.connect(sandAddrDB)
-    conn.execute('''CREATE TABLE IF NOT EXISTS users (
+    conn.execute(f'''CREATE TABLE IF NOT EXISTS {table_name} (
                 username TEXT PRIMARY KEY, 
                 password TEXT, 
                 role TEXT, 
