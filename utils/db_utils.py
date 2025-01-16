@@ -26,7 +26,7 @@ def create_user(username, password, role, color):
     conn = sqlite3.connect(userAddrDB)
     c = conn.cursor()
     try:
-        c.execute('INSERT INTO users (username, password, role, color) VALUES (?, ?, ?, ?)', (username, hash_password(password), role, color))
+        c.execute('INSERT INTO users VALUES (:user, :password, :role, :color)', {'user': username, 'password': hash_password(password),'role':role, 'color':color})
         conn.commit()
         conn.close()
         return True  # Return True if user creation was successful

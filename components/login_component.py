@@ -1,16 +1,17 @@
 # Login form components
 import time
 import streamlit as st
-from utils.db_utils import create_user
-from utils.auth_utils import check_login, hash_password, user_counts
+from utils.db_utils import create_user, create_user_table
+from utils.auth_utils import check_login, user_counts
 
 def login():
+    create_user_table()
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
         if check_login(username, password):
-            st.session_state['logged_in'] = True
+            st.session_state['loggedIn'] = True
             st.session_state.username = username
             st.session_state.role = check_login(username,password)[2]  # Store the role in session state
             st.session_state.color = check_login(username,password)[3] # Store the role color
@@ -20,7 +21,6 @@ def login():
             st.rerun()
         else:
             st.error("Invalid username or password")
-        st.rerun()
 
 def register():
     user_count = user_counts()
@@ -41,5 +41,3 @@ def register():
                 st.error("Passwords do not match. Please try again.")
         else:
             st.error("All fields are required.")
-        time.sleep(1)
-        st.rerun()
