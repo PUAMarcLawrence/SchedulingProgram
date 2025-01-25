@@ -10,15 +10,23 @@ def hash_password(password):
 def check_login(username, password):
     conn = sqlite3.connect(userAddrDB)
     c = conn.cursor()
-    c.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, hash_password(password)))
+    c.execute(
+        '''SELECT * FROM users WHERE username = :username AND password = :password''',
+        {
+            'username': username, 
+            'password': hash_password(password)
+        }
+    )
     result = c.fetchone()
     conn.close()
     return result
 
 def user_counts():
-    conn = sqlite3.connect(userAddrDB)
-    c = conn.cursor()
-    c.execute("SELECT COUNT(*) FROM users")
-    result = c.fetchone()[0]
-    conn.close()
-    return result
+    try:
+        with sqlite3.connect(userAddrDB) as conn:
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM users")
+            return c.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return None
