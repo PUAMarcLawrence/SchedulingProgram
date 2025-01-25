@@ -6,6 +6,8 @@ if "role" not in st.session_state:
     st.session_state['role'] = None
 if 'loggedIn' not in st.session_state:
     st.session_state['loggedIn'] = False
+if 'pageLogin' not in st.session_state:
+    st.session_state['pageLogin'] = True
 
 # Roles declaration
 ROLES = [None, "Subject Chair", "Dean"]
@@ -22,33 +24,35 @@ role = st.session_state.role
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
 
-# =========================== ProgramTree Pages ========================
-quickView = st.Page("programTree/quickView.py", title="Quick View", icon=":material/account_tree:", 
+# ============================ Scheduling Pages ========================
+school_scheduling = st.Page(
+    "scheduling/school_scheduling.py",
+    title="School Scheduling",
+    icon=":material/computer:",
     default=(role == "Subject Chair" or role == "Dean"),)
-# sandbox_programTree = st.Page("programTree/sandBoxTree.py", title="SandBox", icon=":material/handyman:")
 
-# Page Dictionary
+# ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
-programTree_pages = [quickView]
+scheduling_pages = [school_scheduling]
 
+#========================== Main Program ======================================
 # Logo on the Side Bar
 st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
-# Taging pages to thier ROLE restrictions
+# # Taging pages to thier ROLE restrictions
 if st.session_state.role in ["Subject Chair","Dean"]:
-    page_dict["Program Tree"] = programTree_pages
+    page_dict["Scheduling"] = scheduling_pages
+# if st.session_state.role in ["Subject Chair","Dean"]:
+#     page_dict["Program Tree"] = programTree_pages
 
-#========================== Main Program ======================================
 if st.session_state['loggedIn'] and len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)
 else:
     st.title("Welcome to the School Scheduling Program")
-    option = st.selectbox("Choose an Option",["Login","Register"])
-    match option:
-        case "Login":
-            pg = st.navigation([st.Page(login)])
-        case "Register":
-            pg = st.navigation([st.Page(register)])
+    if st.session_state['pageLogin']==True:
+        pg = st.navigation([st.Page(login)])
+    else:
+        pg = st.navigation([st.Page(register)])
 
 pg.run()
