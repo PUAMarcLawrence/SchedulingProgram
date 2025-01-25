@@ -2,13 +2,14 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+import os
 from utils.auth_utils import hash_password, userAddrDB
+
 
 eceAddrDB = 'data/ece.db'
 progAddrDB = 'data/programs.db'
+path = './data'
 
-import sqlite3
-import streamlit as st
 
 # Initialize user table
 def initialize_user_table():
@@ -20,6 +21,8 @@ def initialize_user_table():
       - role: User role (e.g., admin, user).
       - color: Custom color preference for the user.
     """
+    if not os.path.exists(path):
+        os.mkdir(path)
     try:
         with sqlite3.connect(userAddrDB) as conn:
             conn.execute('''
