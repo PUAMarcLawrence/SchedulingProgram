@@ -10,7 +10,7 @@ if 'pageLogin' not in st.session_state:
     st.session_state['pageLogin'] = True
 
 # Roles declaration
-ROLES = [None, "Subject Chair", "Dean"]
+ROLES = [None,"Admin", "Subject Chair", "Dean"]
 
 # Logout Functions
 def logout():
@@ -24,15 +24,23 @@ role = st.session_state.role
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
 
+#============================ Admin Pages ==============================
+manage_users = st.Page(
+    "admin/manage_users.py", 
+    title="Manage Users", 
+    icon=":material/people:", 
+    default=(role == "Admin"),)
+
 # ============================ Scheduling Pages ========================
 school_scheduling = st.Page(
     "scheduling/school_scheduling.py",
     title="School Scheduling",
     icon=":material/computer:",
-    default=(role == "Subject Chair" or role == "Dean"),)
+    default=(role == "Subject Chair" or role == "Dean" or role == "Admin"),)
 
 # ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
+admin_pages = [manage_users]
 scheduling_pages = [school_scheduling]
 
 #========================== Main Program ======================================
@@ -41,6 +49,8 @@ st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = 
 
 page_dict = {}
 # # Taging pages to thier ROLE restrictions
+if st.session_state.role in ["Admin"]:
+    page_dict["Admin"] = admin_pages
 if st.session_state.role in ["Subject Chair","Dean"]:
     page_dict["Scheduling"] = scheduling_pages
 # if st.session_state.role in ["Subject Chair","Dean"]:
