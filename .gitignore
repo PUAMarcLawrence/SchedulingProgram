@@ -1,6 +1,6 @@
 .venv
-sqlLoad_data.ipynb
 subject_graph.html
 data/
 components/__pycache__/
+utils/__pycache__/
 
