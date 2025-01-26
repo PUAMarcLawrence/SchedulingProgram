@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
-from utils.auth_utils import hash_password
+from utils.login_utils import hash_password
 import io
 import time
 

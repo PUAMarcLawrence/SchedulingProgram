@@ -1,8 +1,8 @@
 # Login form components
 import time
 import streamlit as st
-from utils.db_utils import create_user, initialize_db
-from utils.auth_utils import check_login, user_counts
+from utils.login_utils import create_user, initialize_db
+from utils.login_utils import check_login
 
 def register():
     st.title("Register New User")
@@ -14,13 +14,13 @@ def register():
         role = st.selectbox("Select your role",[None,"Dean","Subject Chair"])
         if role == "Dean" or role == "Subject Chair":
             if role == "Subject Chair":
-                department = st.selectbox("Program",["Computer Science","Electrical Engineering"])
+                program = st.selectbox("Program",["Computer Science","Electrical Engineering"])
             color = st.color_picker("Pick a color to represent your account")
 
         if st.button("Register",disabled=role==None):
             if username and password and confirm_password and color and role:
                 if password == confirm_password:
-                    reg_result = create_user(username, password, role, color)
+                    reg_result = create_user(username, password, department, role, program, color)
                     if reg_result.get("success"):
                         st.session_state['pageLogin'] = True
                         st.success(reg_result.get("message"))

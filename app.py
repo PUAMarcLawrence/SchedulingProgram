@@ -31,6 +31,11 @@ manage_users = st.Page(
     icon=":material/people:", 
     default=(role == "Admin"),)
 
+manage_departments = st.Page(
+    "admin/manage_departments.py", 
+    title="Manage Departments", 
+    icon=":material/corporate_fare:",)
+
 # ============================ Scheduling Pages ========================
 school_scheduling = st.Page(
     "scheduling/school_scheduling.py",
@@ -40,7 +45,7 @@ school_scheduling = st.Page(
 
 # ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
-admin_pages = [manage_users]
+admin_pages = [manage_users, manage_departments]
 scheduling_pages = [school_scheduling]
 
 #========================== Main Program ======================================
