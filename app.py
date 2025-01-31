@@ -31,40 +31,44 @@ manage_users = st.Page(
     icon=":material/people:", 
     default=(role == "Admin"),)
 
-manage_departments = st.Page(
-    "admin/manage_departments.py", 
-    title="Manage Departments", 
-    icon=":material/corporate_fare:",)
+# ============================ Dean Pages ==============================
+subject_chair_management = st.Page(
+    "dean/subject_chair_management.py",
+    title="Subject Chair Management",
+    icon=":material/people:",
+    default=(role == "Dean"),)
 
-# ============================ Scheduling Pages ========================
-school_scheduling = st.Page(
-    "scheduling/school_scheduling.py",
-    title="School Scheduling",
-    icon=":material/computer:",
-    default=(role == "Subject Chair" or role == "Dean" or role == "Admin"),)
+# # ============================ Scheduling Pages ========================
+# school_scheduling = st.Page(
+#     "scheduling/school_scheduling.py",
+#     title="School Scheduling",
+#     icon=":material/computer:",
+#     default=(role == "Subject Chair" or role == "Dean" or role == "Admin"),)
 
 # ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
-admin_pages = [manage_users, manage_departments]
-scheduling_pages = [school_scheduling]
+dean_pages = [subject_chair_management]
+admin_pages = [manage_users]
+# scheduling_pages = [school_scheduling]
 
 #========================== Main Program ======================================
 # Logo on the Side Bar
 st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
-# # Taging pages to thier ROLE restrictions
+# Taging pages to thier ROLE restrictions
 if st.session_state.role in ["Admin"]:
     page_dict["Admin"] = admin_pages
-if st.session_state.role in ["Subject Chair","Dean"]:
-    page_dict["Scheduling"] = scheduling_pages
+# if st.session_state.role in ["Subject Chair","Dean"]:
+#     page_dict["Scheduling"] = scheduling_pages
+if st.session_state.role in ["Dean"]:
+    page_dict["Subject Chair"] = dean_pages
 # if st.session_state.role in ["Subject Chair","Dean"]:
 #     page_dict["Program Tree"] = programTree_pages
 
 if st.session_state['loggedIn'] and len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)
 else:
-    st.title("Welcome to the School Scheduling Program")
     if st.session_state['pageLogin']==True:
         pg = st.navigation([st.Page(login)])
     else:

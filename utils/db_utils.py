@@ -1,53 +1,134 @@
 # Functions for database interactions
 import sqlite3
 import pandas as pd
-from utils.login_utils import hash_password
 
+schoolAddrDB = 'data/school.db'
 
-
-eceAddrDB = 'data/ece.db'
-# progAddrDB = 'data/programs.db'
-
-
-# ============================ Program Tree Sqlite Functions ============================
-def get_table_names():
+# ===================================== dean pages ======================================
+def get_program(program_ID):
     try:
-        with sqlite3.connect(eceAddrDB) as conn:
+        with sqlite3.connect(schoolAddrDB) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-            tables = [row[0] for row in cursor.fetchall()]
-        return tables
+            cursor.execute(
+                '''
+                SELECT program
+                FROM programs WHERE program_ID = :program_ID
+                ''',
+                {'program_ID':program_ID})
+            return cursor.fetchone()[0]
     except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
-        return []
+        print(f"An error occurred: {e}")
+        return None
 
-# Function to load subjects from the selected table
-def load_subjects_from_db(table_name):
+def get_programID(program):
     try:
-        with sqlite3.connect(eceAddrDB) as conn:
-            query = f"""
-            SELECT Year, Term, Code, Title, Prerequisites, Co_requisites, [Credit Units]
-            FROM "{table_name}";
-            """
-            rows = conn.execute(query).fetchall()
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT program_ID
+                FROM programs WHERE program = :program
+                ''',
+                {'program':program})
+            return cursor.fetchone()[0]
     except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
-        return {}
+        print(f"An error occurred: {e}")
+        return None
 
-    subjects = {}
-    for row in rows:
-        year, term, subject_code, title, prerequisites, corequisites, credit_unit= row
-        prerequisites = prerequisites.split(',') if prerequisites else []
-        corequisites = corequisites.split(',') if corequisites else []
+def add_program(program,department):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                INSERT INTO programs (program, department_ID) VALUES (:program, :department_ID)
+                ''',
+                {'program':program.upper(),
+                 'department_ID':department})
+            conn.commit()
+            return True
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return False
 
-        semester_key = f"{year} - {term}"
-        if semester_key not in subjects:
-            subjects[semester_key] = {}
+def get_department(department_ID):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT department 
+                FROM departments WHERE department_ID = :department_ID
+                ''',
+                {'department_ID':department_ID})
+            return cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
 
-        subjects[semester_key][subject_code] = {
-            "title": title,
-            "prerequisites": [prereq.strip() for prereq in prerequisites],
-            "corequisites": [coreq.strip() for coreq in corequisites],
-            "credit_unit": credit_unit
-        }
-    return subjects
+def get_departmentID(department):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT department_ID 
+                FROM departments WHERE department = :department
+                ''',
+                {'department':department})
+            return cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
+
+def add_department(department):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            conn.execute(
+                    '''
+                    INSERT OR IGNORE INTO departments (department) 
+                    VALUES (:department)
+                    ''', 
+                    {
+                        'department': department
+                    }
+                )
+    except sqlite3.Error as e:
+       print(f"An error occurred: {e}")
+
+def get_subjectChair_Dean(role,department_ID):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT program_ID, username
+                FROM users 
+                WHERE role = :role AND department_ID =:departmentID
+                ''',
+                {
+                    'role': role,
+                    'departmentID':department_ID
+                }
+            )
+            Subject_Chair_list = pd.DataFrame(cursor.fetchall(),columns=['program','username'])
+            programID_column = Subject_Chair_list['program']
+            program_column = programID_column.apply(get_program)
+            Subject_Chair_list['program']=program_column
+            cursor.execute(
+                '''
+                SELECT program
+                FROM programs
+                WHERE department_ID = :departmentID
+                ''',
+                {
+                    'departmentID':department_ID
+                }
+            )
+            Subject_list = pd.DataFrame(cursor.fetchall(),columns=['program'])
+            result = Subject_Chair_list.merge(Subject_list,how='right')
+            return result
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return []
+    
