@@ -1,111 +1,134 @@
 # Functions for database interactions
-import streamlit as st
 import sqlite3
 import pandas as pd
-import os
-from utils.auth_utils import hash_password, userAddrDB
 
+schoolAddrDB = 'data/school.db'
 
-eceAddrDB = 'data/ece.db'
-progAddrDB = 'data/programs.db'
-path = './data'
-
-
-# Initialize user table
-def initialize_user_table():
-    """
-    Creates a 'users' table in the SQLite database if it doesn't exist.
-    The table includes:
-      - username: Unique identifier (Primary Key).
-      - password: Stores the hashed password.
-      - role: User role (e.g., admin, user).
-      - color: Custom color preference for the user.
-    """
-    if not os.path.exists(path):
-        os.mkdir(path)
+# ===================================== dean pages ======================================
+def get_program(program_ID):
     try:
-        with sqlite3.connect(userAddrDB) as conn:
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                         ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                         username TEXT NOT NULL UNIQUE, 
-                         password TEXT NOT NULL, 
-                         role TEXT NOT NULL, 
-                         color TEXT NOT NULL UNIQUE
-                )
-            ''')
-            # conn.execute('''
-            #     CREATE UNIQUE INDEX IF NOT EXISTS idx_username_color ON users (color)
-            # ''')
-    except sqlite3.Error as e:
-        st.error(f"Database connection error: {e}")
-
-def create_user(username, password, role, color):
-    try:
-        # Validate inputs
-        if not username or not password or not role or not color:
-            raise ValueError("All fields (username, password, role, color) are required.")
-
-        # Open database connection
-        with sqlite3.connect(userAddrDB) as conn:
-            conn.execute(
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
                 '''
-                INSERT INTO users (username, password, role, color) 
-                VALUES (:user, :password, :role, :color)
-                ''', 
+                SELECT program
+                FROM programs WHERE program_ID = :program_ID
+                ''',
+                {'program_ID':program_ID})
+            return cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
+
+def get_programID(program):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT program_ID
+                FROM programs WHERE program = :program
+                ''',
+                {'program':program})
+            return cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
+
+def add_program(program,department):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                INSERT INTO programs (program, department_ID) VALUES (:program, :department_ID)
+                ''',
+                {'program':program.upper(),
+                 'department_ID':department})
+            conn.commit()
+            return True
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return False
+
+def get_department(department_ID):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT department 
+                FROM departments WHERE department_ID = :department_ID
+                ''',
+                {'department_ID':department_ID})
+            return cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
+
+def get_departmentID(department):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT department_ID 
+                FROM departments WHERE department = :department
+                ''',
+                {'department':department})
+            return cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
+
+def add_department(department):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            conn.execute(
+                    '''
+                    INSERT OR IGNORE INTO departments (department) 
+                    VALUES (:department)
+                    ''', 
+                    {
+                        'department': department
+                    }
+                )
+    except sqlite3.Error as e:
+       print(f"An error occurred: {e}")
+
+def get_subjectChair_Dean(role,department_ID):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT program_ID, username
+                FROM users 
+                WHERE role = :role AND department_ID =:departmentID
+                ''',
                 {
-                    'user': username, 
-                    'password': hash_password(password),
-                    'role': role, 
-                    'color': color
+                    'role': role,
+                    'departmentID':department_ID
                 }
             )
-        return {"success": True, "message": f"{role} Registration successful! You can now log in."}
-    except sqlite3.IntegrityError:
-        return {"success": False, "message": "Username already exists/Color already used. Please choose a different one."}
+            Subject_Chair_list = pd.DataFrame(cursor.fetchall(),columns=['program','username'])
+            programID_column = Subject_Chair_list['program']
+            program_column = programID_column.apply(get_program)
+            Subject_Chair_list['program']=program_column
+            cursor.execute(
+                '''
+                SELECT program
+                FROM programs
+                WHERE department_ID = :departmentID
+                ''',
+                {
+                    'departmentID':department_ID
+                }
+            )
+            Subject_list = pd.DataFrame(cursor.fetchall(),columns=['program'])
+            result = Subject_Chair_list.merge(Subject_list,how='right')
+            return result
     except sqlite3.Error as e:
-        return {"success": False, "message": f"Database error: {e}"}
-    except ValueError as ve:
-        return {"success": False, "message": str(ve)}
-
-def get_table_names():
-    try:
-        with sqlite3.connect(eceAddrDB) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-            tables = [row[0] for row in cursor.fetchall()]
-        return tables
-    except sqlite3.Error as e:
-        st.error(f"Database connection error: {e}")
+        print(f"An error occurred: {e}")
         return []
-
-# Function to load subjects from the selected table
-def load_subjects_from_db(table_name):
-    try:
-        with sqlite3.connect(eceAddrDB) as conn:
-            query = f"""
-            SELECT Year, Term, Code, Title, Prerequisites, Co_requisites, [Credit Units]
-            FROM "{table_name}";
-            """
-            rows = conn.execute(query).fetchall()
-    except sqlite3.Error as e:
-        st.error(f"Database connection error: {e}")
-        return {}
-
-    subjects = {}
-    for row in rows:
-        year, term, subject_code, title, prerequisites, corequisites, credit_unit= row
-        prerequisites = prerequisites.split(',') if prerequisites else []
-        corequisites = corequisites.split(',') if corequisites else []
-
-        semester_key = f"{year} - {term}"
-        if semester_key not in subjects:
-            subjects[semester_key] = {}
-
-        subjects[semester_key][subject_code] = {
-            "title": title,
-            "prerequisites": [prereq.strip() for prereq in prerequisites],
-            "corequisites": [coreq.strip() for coreq in corequisites],
-            "credit_unit": credit_unit
-        }
-    return subjects
+    
