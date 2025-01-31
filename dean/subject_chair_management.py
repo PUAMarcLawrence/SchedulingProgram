@@ -9,6 +9,8 @@ def add_DepartmentProgram():
         else:
             st.error("Program already exists.")
 
+# def remove_DepartmentProgram():
+
 def add_new():
     # Input box for adding new items
     text_box,button = st.columns(2)
@@ -20,6 +22,9 @@ def add_new():
     button.button(
         "Add", 
         on_click=add_DepartmentProgram)
+    button.button(
+        "Remove", 
+        on_click=st.rerun)
 
 
 # Main app layout
