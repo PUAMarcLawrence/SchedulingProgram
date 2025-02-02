@@ -19,12 +19,13 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-![GitHub contributors](https://img.shields.io/github/contributors/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
-![GitHub forks](https://img.shields.io/github/forks/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
-![GitHub Repo stars](https://img.shields.io/github/stars/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
-![GitHub License](https://img.shields.io/github/license/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
+![GitHub contributors][contributors-shield]
+![GitHub forks][forks-shield]
+![GitHub Repo stars][stars-shield]
+![GitHub Issues or Pull Requests][issues-shield]
+![GitHub License][license-shield]
 [![LinkedIn][linkedin-shield]][linkedin-url]
+
 
 
 
@@ -214,6 +215,12 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
+[contributors-shield]: https://img.shields.io/github/contributors/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://img.shields.io/github/issues/PUAMarcLawrence/
