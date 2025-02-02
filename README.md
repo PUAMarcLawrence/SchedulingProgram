@@ -20,9 +20,9 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 ![GitHub contributors](https://img.shields.io/github/contributors/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
+![GitHub forks](https://img.shields.io/github/forks/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
+![GitHub Repo stars](https://img.shields.io/github/stars/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
 ![GitHub License](https://img.shields.io/github/license/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
@@ -223,7 +223,8 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
 [license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
+[linkedin-url]: https://img.shields.io/github/issues/PUAMarcLawrence/
+
 [product-screenshot]: images/screenshot.png
 
 [Python]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
