@@ -53,7 +53,7 @@ admin_pages = [manage_users]
 
 #========================== Main Program ======================================
 # Logo on the Side Bar
-st.logo("images/Scheduling Tools.PNG", icon_image="images/scheduler.png",size = "large")
+st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
 # Taging pages to thier ROLE restrictions

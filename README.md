@@ -19,12 +19,11 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+![GitHub contributors](https://img.shields.io/github/contributors/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
+![GitHub forks](https://img.shields.io/github/forks/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
+![GitHub Repo stars](https://img.shields.io/github/stars/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
+![GitHub License](https://img.shields.io/github/license/PUAMarcLawrence/SchedulingProgram?style=for-the-badge)
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
@@ -85,8 +84,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
+![Product Name Screen Shot][product-screenshot]
 Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -97,7 +95,6 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 * [![Python][Python]][Python-url]
 * [![SQLite][SQLite]][SQLite-url]
-<!-- * [![pyvis][pyvis]][pyvis-url] -->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -213,22 +210,14 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
-[product-screenshot]: images/screenshot.png
+[linkedin-url]: https://img.shields.io/github/issues/PUAMarcLawrence/
+
+[product-screenshot]: https://github.com/PUAMarcLawrence/SchedulingProgram/blob/1f3402d96124259fb7afb95dd96fe3386bae3aac/images/Scheduling%20Tools.PNG
 
 [Python]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
 [Python-url]:https://www.python.org/
 [SQLite]: https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white
 [SQLite-url]: https://www.sqlite.org/
-<!-- [pyvis]:  -->
+
