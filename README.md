@@ -84,8 +84,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
+![Product Name Screen Shot][product-screenshot]
 Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -96,7 +95,6 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 * [![Python][Python]][Python-url]
 * [![SQLite][SQLite]][SQLite-url]
-<!-- * [![pyvis][pyvis]][pyvis-url] -->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -225,7 +223,7 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://img.shields.io/github/issues/PUAMarcLawrence/
 
-[product-screenshot]: images/screenshot.png
+[product-screenshot]: https://github.com/PUAMarcLawrence/SchedulingProgram/blob/1f3402d96124259fb7afb95dd96fe3386bae3aac/images/Scheduling%20Tools.PNG
 
 [Python]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
 [Python-url]:https://www.python.org/
