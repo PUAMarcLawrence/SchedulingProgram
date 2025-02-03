@@ -1,6 +1,6 @@
 import streamlit as st
 from components.login_component import login, register,AdminRegistration
-from utils.login_utils import check_anyUser,initialize_db
+from utils.login_db_utils import check_anyUser,initialize_db
 
 # initializing session states
 if "role" not in st.session_state:
@@ -46,21 +46,26 @@ subject_chair_management = st.Page(
 #     icon=":material/computer:",
 #     default=(role == "Subject Chair" or role == "Dean"),)
 
-# # ============================ Program Tree Pages ========================
+# ============================ Program Tree Pages =======================
 quickView = st.Page(
-    "programTree/quickView.py", 
+    "programTree/quick_view.py", 
     title="Quick View", 
     icon=":material/account_tree:",
     default=(role == "Subject Chair" or role == "Dean"),)
+
+upload_curiculum = st.Page(
+    "programTree/upload_file.py",
+    title="Upload Curiculum",
+    icon=":material/upload:")
 
 # ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
 dean_pages = [subject_chair_management]
 admin_pages = [manage_users]
 # scheduling_pages = [school_scheduling]
-programTree_pages = [quickView]
+programTree_pages = [quickView,upload_curiculum]
 
-#========================== Main Program ======================================
+# ========================== Main Program ===============================
 # Logo on the Side Bar
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
@@ -68,10 +73,10 @@ page_dict = {}
 # Taging pages to thier ROLE restrictions
 if st.session_state.role in ["Admin"]:
     page_dict["Admin"] = admin_pages
-# if st.session_state.role in ["Subject Chair","Dean"]:
-#     page_dict["Scheduling"] = scheduling_pages
 if st.session_state.role in ["Dean"]:
     page_dict["Subject Chair"] = dean_pages
+# if st.session_state.role in ["Subject Chair","Dean"]:
+#     page_dict["Scheduling"] = scheduling_pages
 if st.session_state.role in ["Subject Chair","Dean"]:
     page_dict["Program Tree"] = programTree_pages
 
