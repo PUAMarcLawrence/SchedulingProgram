@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from utils.login_utils import check_old_password, change_password_to_new
+from utils.login_db_utils import check_old_password, change_password_to_new
 
 def change_password():
     old_password = st.text_input("Old Password", type="password")

@@ -1,7 +1,7 @@
 # Login form components
 import time
 import streamlit as st
-from utils.login_utils import create_admin, create_user, check_login, get_departments, get_programs
+from utils.login_db_utils import create_admin, create_user, check_login, get_departments, get_programs
 
 def AdminRegistration():
     st.title("Admin Registration")

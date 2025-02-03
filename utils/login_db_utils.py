@@ -109,7 +109,6 @@ def create_admin(username, password):
     except sqlite3.Error as e:
         return False
 
-
 def create_user(username, password,department, role, program, color):
     try:
         # Open database connection
