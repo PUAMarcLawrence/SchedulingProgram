@@ -20,10 +20,10 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 [![GitHub contributors][contributors-shield]][contributors-url]
-![GitHub forks][forks-shield]
-![GitHub Repo stars][stars-shield]
-![GitHub Issues or Pull Requests][issues-shield]
-![GitHub License][license-shield]
+[![GitHub forks][forks-shield]][forks-url]
+[![GitHub Repo stars][stars-shield]][stars-url]
+[![GitHub Issues or Pull Requests][issues-shield]][issues-url]
+[![GitHub License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
@@ -220,10 +220,13 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [contributors-shield]: https://img.shields.io/github/contributors/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
 [contributors-url]: https://github.com/PUAMarcLawrence/SchedulingProgram/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[forks-url]: https://github.com/PUAMarcLawrence/SchedulingProgram/network/members
 [stars-shield]: https://img.shields.io/github/stars/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[stars-url]: https://github.com/PUAMarcLawrence/SchedulingProgram/stargazers
 [issues-shield]: https://img.shields.io/github/issues/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[issues-url]: https://github.com/PUAMarcLawrence/SchedulingProgram/issues
 [license-shield]: https://img.shields.io/github/license/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
-
+[license-url]: https://github.com/PUAMarcLawrence/SchedulingProgram/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://img.shields.io/github/issues/PUAMarcLawrence/
 
