@@ -1,7 +1,19 @@
 # Login form components
 import time
 import streamlit as st
-from utils.login_utils import create_user, initialize_db, check_login, get_departments, get_programs
+from utils.login_utils import create_admin, create_user, check_login, get_departments, get_programs
+
+def AdminRegistration():
+    st.title("Admin Registration")
+    admin_user = st.text_input("Enter the Admin Username")
+    admin_pass = st.text_input("Enter the Admin Password",type="password")
+    if st.button("Register"):
+        if create_admin(admin_user,admin_pass):
+            st.success("Admin account created successfully.")
+            time.sleep(2)
+            st.rerun()
+        else:
+            st.error("An Error occured!")
 
 def register():
     st.title("Register New User")
@@ -51,7 +63,6 @@ def register():
 
 def login():
     st.title("Welcome to the School Scheduling System")
-    initialize_db()
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
