@@ -15,54 +15,53 @@ def initialize_db():
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
             conn.execute('PRAGMA foreign_keys = ON;')
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS departments (
-                         department_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                         department TEXT NOT NULL UNIQUE
+            conn.execute(
+                '''
+                CREATE TABLE IF NOT EXISTS departments(
+                department_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                department TEXT NOT NULL UNIQUE
                 )
-            ''')
-            conn.execute('''
+                '''
+            )
+            conn.execute(
+                '''
                 CREATE TABLE IF NOT EXISTS programs (
-                         program_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                         program TEXT NOT NULL UNIQUE,
-                         department_ID INTEGER NOT NULL,
-                         FOREIGN KEY(department_ID) REFERENCES departments(department_ID)
+                    program_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    program TEXT NOT NULL UNIQUE,
+                    department_ID INTEGER NOT NULL,
+                    FOREIGN KEY(department_ID) REFERENCES departments(department_ID)
                 )
-            ''')
-            conn.execute('''
+                '''
+            )
+            conn.execute(
+                '''
                 CREATE TABLE IF NOT EXISTS users (
-                         ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                         username TEXT NOT NULL UNIQUE, 
-                         password TEXT NOT NULL UNIQUE,
-                         role TEXT NOT NULL,
-                         department_ID INTEGER,
-                         program_ID INTEGER UNIQUE,
-                         color TEXT NOT NULL UNIQUE,
-                         FOREIGN KEY(department_ID) REFERENCES departments(department_ID),
-                         FOREIGN KEY(program_ID) REFERENCES programs(program_ID)
+                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL UNIQUE, 
+                    password TEXT NOT NULL UNIQUE,
+                    role TEXT NOT NULL,
+                    department_ID INTEGER,
+                    program_ID INTEGER UNIQUE,
+                    color TEXT NOT NULL UNIQUE,
+                    FOREIGN KEY(department_ID) REFERENCES departments(department_ID),
+                    FOREIGN KEY(program_ID) REFERENCES programs(program_ID)
                 )
-            ''')
+                '''
+            )
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
 
+def check_anyUser():
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM users")
             if cursor.fetchone()[0] == 0:
-                # conn.execute('''INSERT OR IGNORE INTO departments (department) VALUES ('EECE')''')
-                # conn.execute('''INSERT OR IGNORE INTO programs (program, department_ID) VALUES ('CPE', 1)''')
-                conn.execute(
-                    '''
-                    INSERT INTO users (username, password, department_ID, role, program_ID, color) 
-                    VALUES (:username, :password, :department, :role, :program, :color)
-                    ''',
-                    {
-                        'username': 'MapuaAdmin',
-                        'password': hash_password('Mapua01251925'),
-                        'department': None,
-                        'role': 'Admin',
-                        'program': None,
-                        'color': '#000000'
-                    })
+                return True
+            return False
     except sqlite3.Error as e:
         print(f"Database connection error: {e}")
+        return False
 
 def get_departments():
     try:
@@ -89,6 +88,27 @@ def get_programs(department):
     except sqlite3.Error as e:
         print(f"Database connection error: {e}")
         return []
+
+def create_admin(username, password):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            conn.execute(
+                    '''
+                    INSERT INTO users (username, password, department_ID, role, program_ID, color) 
+                    VALUES (:username, :password, :department, :role, :program, :color)
+                    ''',
+                    {
+                        'username': username,
+                        'password': hash_password(password),
+                        'department': None,
+                        'role': 'Admin',
+                        'program': None,
+                        'color': '#000000'
+                    })
+        return True
+    except sqlite3.Error as e:
+        return False
+
 
 def create_user(username, password,department, role, program, color):
     try:

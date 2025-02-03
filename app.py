@@ -1,5 +1,6 @@
 import streamlit as st
-from components.login_component import login, register
+from components.login_component import login, register,AdminRegistration
+from utils.login_utils import check_anyUser,initialize_db
 
 # initializing session states
 if "role" not in st.session_state:
@@ -77,9 +78,13 @@ if st.session_state.role in ["Subject Chair","Dean"]:
 if st.session_state['loggedIn'] and len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)
 else:
-    if st.session_state['pageLogin']==True:
-        pg = st.navigation([st.Page(login)])
+    initialize_db()
+    if check_anyUser():
+        pg = st.navigation([st.Page(AdminRegistration)])
     else:
-        pg = st.navigation([st.Page(register)])
+        if st.session_state['pageLogin']==True:
+            pg = st.navigation([st.Page(login)])
+        else:
+            pg = st.navigation([st.Page(register)])
 
 pg.run()
