@@ -113,7 +113,7 @@ def create_user(username, password,department, role, program, color):
                 }
             )
         return {"success": True, "message": f"{role} Registration successful! You can now log in."}
-    except sqlite3.IntegrityError:
+    except sqlite3.IntegrityError as ie:
         return {"success": False, "message": "Username already exists/Color already used. Please choose a different one."}
     except sqlite3.Error as e:
         return {"success": False, "message": f"Database error: {e}"}
