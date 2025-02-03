@@ -4,7 +4,6 @@ import pandas as pd
 
 schoolAddrDB = 'data/school.db'
 
-# ===================================== dean pages ======================================
 def get_program(program_ID):
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
@@ -46,6 +45,33 @@ def add_program(program,department):
                 {'program':program.upper(),
                  'department_ID':department})
             conn.commit()
+            return True
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return False
+
+def remove_program(program,department_ID):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT program
+                FROM programs
+                WHERE department_ID = :departmentID
+                ''',
+                {
+                    'departmentID':department_ID
+                }
+            )
+            Subject_list = pd.DataFrame(cursor.fetchall(),columns=['program'])
+            print(Subject_list)
+
+            conn.execute(
+                '''
+                DELETE FROM programs WHERE program = :program
+                ''',
+                {'program':program.upper()})
             return True
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
@@ -96,10 +122,33 @@ def add_department(department):
     except sqlite3.Error as e:
        print(f"An error occurred: {e}")
 
+def get_all_subjects_in_department(department_ID):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT program
+                FROM programs
+                WHERE department_ID = :departmentID
+                ''',
+                {
+                    'departmentID':department_ID
+                }
+            )
+            Subject_list = pd.DataFrame(cursor.fetchall(),columns=['program'])
+            return Subject_list
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return []
+
+# ===================================== dean pages ======================================
+
 def get_subjectChair_Dean(role,department_ID):
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
             cursor = conn.cursor()
+            
             cursor.execute(
                 '''
                 SELECT program_ID, username
@@ -131,4 +180,3 @@ def get_subjectChair_Dean(role,department_ID):
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
         return []
-    
