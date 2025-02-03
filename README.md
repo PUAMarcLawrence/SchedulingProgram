@@ -19,7 +19,7 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-![GitHub contributors][contributors-shield]
+[![GitHub contributors][contributors-shield]][contributors-url]
 ![GitHub forks][forks-shield]
 ![GitHub Repo stars][stars-shield]
 ![GitHub Issues or Pull Requests][issues-shield]
@@ -218,6 +218,7 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [contributors-shield]: https://img.shields.io/github/contributors/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
+[contributors-url]: https://github.com/PUAMarcLawrence/SchedulingProgram/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
 [stars-shield]: https://img.shields.io/github/stars/PUAMarcLawrence/SchedulingProgram?style=for-the-badge
 [issues-shield]: https://img.shields.io/github/issues/PUAMarcLawrence/SchedulingProgram?style=for-the-badge

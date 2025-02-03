@@ -1,6 +1,6 @@
 # Description: This file contains the code for the subject chair management system.
 import streamlit as st
-from utils.db_utils import get_subjectChair_Dean,add_program,remove_program
+from utils.db_utils import get_subjectChair_Dean,add_program,remove_dean_program
 
 def add_DepartmentProgram():
     if st.session_state['new_program']:
@@ -11,10 +11,10 @@ def add_DepartmentProgram():
 
 def remove_Departmentprogram():
     if st.session_state['selected_program']:
-        if remove_program(st.session_state['selected_program'],st.session_state['department_ID']):
+        if remove_dean_program(st.session_state['selected_program'],st.session_state['department_ID']):
             st.success("Program removed successfully.")
         else:
-            st.error("Program does not exist.")
+            st.error("Program selected has a subject chair assigned to it. Please reassign the subject chair before removing the program.")
 
 def remove_new():
     select_box,button = st.columns(2)

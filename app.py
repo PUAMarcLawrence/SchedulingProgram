@@ -35,21 +35,29 @@ manage_users = st.Page(
 subject_chair_management = st.Page(
     "dean/subject_chair_management.py",
     title="Subject Chair Management",
-    icon=":material/people:",
-    default=(role == "Dean"),)
+    icon=":material/people:",)
+    # default=(role == "Dean"),)
 
 # # ============================ Scheduling Pages ========================
 # school_scheduling = st.Page(
 #     "scheduling/school_scheduling.py",
 #     title="School Scheduling",
 #     icon=":material/computer:",
-#     default=(role == "Subject Chair" or role == "Dean" or role == "Admin"),)
+#     default=(role == "Subject Chair" or role == "Dean"),)
+
+# # ============================ Program Tree Pages ========================
+quickView = st.Page(
+    "programTree/quickView.py", 
+    title="Quick View", 
+    icon=":material/account_tree:",
+    default=(role == "Subject Chair" or role == "Dean"),)
 
 # ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
 dean_pages = [subject_chair_management]
 admin_pages = [manage_users]
 # scheduling_pages = [school_scheduling]
+programTree_pages = [quickView]
 
 #========================== Main Program ======================================
 # Logo on the Side Bar
@@ -63,8 +71,8 @@ if st.session_state.role in ["Admin"]:
 #     page_dict["Scheduling"] = scheduling_pages
 if st.session_state.role in ["Dean"]:
     page_dict["Subject Chair"] = dean_pages
-# if st.session_state.role in ["Subject Chair","Dean"]:
-#     page_dict["Program Tree"] = programTree_pages
+if st.session_state.role in ["Subject Chair","Dean"]:
+    page_dict["Program Tree"] = programTree_pages
 
 if st.session_state['loggedIn'] and len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)

@@ -49,29 +49,18 @@ def add_program(program,department):
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
         return False
-
-def remove_program(program,department_ID):
+    
+def remove_dean_program(program,department):
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 '''
-                SELECT program
-                FROM programs
-                WHERE department_ID = :departmentID
+                DELETE FROM programs WHERE program = :program AND department_ID = :department_ID
                 ''',
-                {
-                    'departmentID':department_ID
-                }
-            )
-            Subject_list = pd.DataFrame(cursor.fetchall(),columns=['program'])
-            print(Subject_list)
-
-            conn.execute(
-                '''
-                DELETE FROM programs WHERE program = :program
-                ''',
-                {'program':program.upper()})
+                {'program':program.upper(),
+                 'department_ID':department})
+            conn.commit()
             return True
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
@@ -122,7 +111,7 @@ def add_department(department):
     except sqlite3.Error as e:
        print(f"An error occurred: {e}")
 
-def get_all_subjects_in_department(department_ID):
+def get_all_program_in_department(department_ID):
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
             cursor = conn.cursor()
@@ -136,19 +125,15 @@ def get_all_subjects_in_department(department_ID):
                     'departmentID':department_ID
                 }
             )
-            Subject_list = pd.DataFrame(cursor.fetchall(),columns=['program'])
-            return Subject_list
+            return pd.DataFrame(cursor.fetchall(),columns=['program'])
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
         return []
 
-# ===================================== dean pages ======================================
-
-def get_subjectChair_Dean(role,department_ID):
+def get_all_subjectChairs_in_department(role,department_ID):
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
             cursor = conn.cursor()
-            
             cursor.execute(
                 '''
                 SELECT program_ID, username
@@ -160,21 +145,23 @@ def get_subjectChair_Dean(role,department_ID):
                     'departmentID':department_ID
                 }
             )
-            Subject_Chair_list = pd.DataFrame(cursor.fetchall(),columns=['program','username'])
+            return pd.DataFrame(cursor.fetchall(),columns=['program','username'])
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return []
+
+# ===================================== dean pages ======================================
+
+def get_subjectChair_Dean(role,department_ID):
+
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            Subject_Chair_list = get_all_subjectChairs_in_department(role,department_ID)
             programID_column = Subject_Chair_list['program']
             program_column = programID_column.apply(get_program)
             Subject_Chair_list['program']=program_column
-            cursor.execute(
-                '''
-                SELECT program
-                FROM programs
-                WHERE department_ID = :departmentID
-                ''',
-                {
-                    'departmentID':department_ID
-                }
-            )
-            Subject_list = pd.DataFrame(cursor.fetchall(),columns=['program'])
+            Subject_list = get_all_program_in_department(department_ID)
             result = Subject_Chair_list.merge(Subject_list,how='right')
             return result
     except sqlite3.Error as e:
