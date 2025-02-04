@@ -4,11 +4,10 @@ import pandas as pd
 from datetime import datetime
 from utils.programTree_db_utils import upload_to_database
 
+st.set_page_config(layout="wide")
+
 # Set the name of the template file
 template_file_name = "template/Curiculum.xlsx"
-
-# Display a title and some instructions
-# st.title("Download Template Excel File")
 
 if 'editable_list' not in st.session_state:
     st.session_state['editable_list'] = []
@@ -36,22 +35,22 @@ uploaded_file = st.file_uploader(
 )
 if uploaded_file is not None:
     prog_select,year_select = st.columns(2)
-    program = prog_select.selectbox("Choose a Program",st.session_state['editable_list'])
+    program = prog_select.text_input("Enter the Program")
     years = list(range(datetime.now().year - 15, datetime.now().year + 15))
-    selected_year = year_select.selectbox("Select Year:", years, index=len(years) - 1)
+    selected_year = year_select.selectbox("Select Year:", years, index=len(years) - 15)
     if st.button("Upload Curiculum"):
         if program and selected_year:
             if upload_to_database(uploaded_file,program,str(selected_year)):
-                st.write("Uploaded")
+                st.success("Uploaded")
             else:
-                st.eror("Failed to Upload Curiculum")
+                st.error("Failed to Upload Curiculum")
         else:
-            st.eror("Fill up the Required Fields")
+            st.error("Fill up the Required Fields")
     # Load data from the uploaded Excel file
     try:
         data = pd.read_excel(uploaded_file)
         # Display data preview
         st.write("Preview of Excel data:")
-        st.dataframe(data)
+        st.dataframe(data,use_container_width=True,height=500)
     except Exception as e:
         st.error(f"Error reading Excel file: {e}")

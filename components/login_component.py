@@ -16,6 +16,7 @@ def AdminRegistration():
             st.error("An Error occured!")
 
 def register():
+    st.set_page_config(layout="centered")
     st.title("Register New User")
     username = st.text_input("Choose a Username")
     first,second =st.columns(2)
@@ -62,6 +63,7 @@ def register():
         st.rerun()
 
 def login():
+    st.set_page_config(layout="centered")
     st.title("Welcome to the School Scheduling System")
     st.title("Login")
     username = st.text_input("Username")

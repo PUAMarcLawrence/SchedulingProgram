@@ -39,19 +39,19 @@ subject_chair_management = st.Page(
     icon=":material/people:",)
     # default=(role == "Dean"),)
 
-# # ============================ Scheduling Pages ========================
-# school_scheduling = st.Page(
-#     "scheduling/school_scheduling.py",
-#     title="School Scheduling",
-#     icon=":material/computer:",
-#     default=(role == "Subject Chair" or role == "Dean"),)
+# ============================ Scheduling Pages ========================
+school_scheduling = st.Page(
+    "scheduling/school_scheduling.py",
+    title="School Scheduling",
+    icon=":material/computer:",
+    default=(role == "Subject Chair" or role == "Dean"),)
 
 # ============================ Program Tree Pages =======================
 quickView = st.Page(
     "programTree/quick_view.py", 
     title="Quick View", 
-    icon=":material/account_tree:",
-    default=(role == "Subject Chair" or role == "Dean"),)
+    icon=":material/account_tree:",)
+    # default=(role == "Subject Chair" or role == "Dean"),)
 
 upload_curiculum = st.Page(
     "programTree/upload_file.py",
@@ -62,7 +62,7 @@ upload_curiculum = st.Page(
 account_pages = [logout_page, settings]
 dean_pages = [subject_chair_management]
 admin_pages = [manage_users]
-# scheduling_pages = [school_scheduling]
+scheduling_pages = [school_scheduling]
 programTree_pages = [quickView,upload_curiculum]
 
 # ========================== Main Program ===============================
@@ -75,8 +75,8 @@ if st.session_state.role in ["Admin"]:
     page_dict["Admin"] = admin_pages
 if st.session_state.role in ["Dean"]:
     page_dict["Subject Chair"] = dean_pages
-# if st.session_state.role in ["Subject Chair","Dean"]:
-#     page_dict["Scheduling"] = scheduling_pages
+if st.session_state.role in ["Subject Chair","Dean"]:
+    page_dict["Scheduling"] = scheduling_pages
 if st.session_state.role in ["Subject Chair","Dean"]:
     page_dict["Program Tree"] = programTree_pages
 
@@ -91,5 +91,4 @@ else:
             pg = st.navigation([st.Page(login)])
         else:
             pg = st.navigation([st.Page(register)])
-
 pg.run()
