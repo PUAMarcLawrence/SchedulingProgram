@@ -19,7 +19,7 @@ def load_subjects_from_db(table_name):
     try:
         with sqlite3.connect(eceAddrDB) as conn:
             query = f"""
-            SELECT Year, Term, Code, Title, Prerequisites, Co_requisites, [Credit Units]
+            SELECT Year, Term, Code, Title, [Lec Hrs], [Lab Hrs], Prerequisites, Co_requisites, [Credit Units], [Care Taker]
             FROM "{table_name}";
             """
             rows = conn.execute(query).fetchall()
@@ -29,7 +29,7 @@ def load_subjects_from_db(table_name):
 
     subjects = {}
     for row in rows:
-        year, term, subject_code, title, prerequisites, corequisites, credit_unit= row
+        year, term, subject_code, title,lec_hrs, lab_hrs, prerequisites, corequisites, credit_unit, care_taker= row
         prerequisites = prerequisites.split(',') if prerequisites else []
         corequisites = corequisites.split(',') if corequisites else []
         if year != None:
@@ -42,9 +42,12 @@ def load_subjects_from_db(table_name):
 
         subjects[semester_key][subject_code] = {
             "title": title,
+            "lec_hrs":lec_hrs,
+            "lab_hrs":lab_hrs,
             "prerequisites": [prereq.strip() for prereq in prerequisites],
             "corequisites": [coreq.strip() for coreq in corequisites],
-            "credit_unit": credit_unit
+            "credit_unit": credit_unit,
+            "care_taker": care_taker
         }
     return subjects
 
