@@ -32,7 +32,6 @@ def main_program():
         # Add "Add New Curriculum and School Year" to the dropdown list
         add_new_option = "Add New Curriculum and School Year"
         dropdown_options = [add_new_option] + curriculum_school_year_options
-        print(curriculum_school_year_options)
         # Dropdown for curriculum and school year
         selected_curriculum_school_year = st.selectbox(
             "Select Curriculum and School Year",
