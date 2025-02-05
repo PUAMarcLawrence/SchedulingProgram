@@ -153,17 +153,10 @@ def get_all_subjectChairs_in_department(role,department_ID):
 # ===================================== dean pages ======================================
 
 def get_subjectChair_Dean(role,department_ID):
-
-    try:
-        with sqlite3.connect(schoolAddrDB) as conn:
-            cursor = conn.cursor()
-            Subject_Chair_list = get_all_subjectChairs_in_department(role,department_ID)
-            programID_column = Subject_Chair_list['program']
-            program_column = programID_column.apply(get_program)
-            Subject_Chair_list['program']=program_column
-            Subject_list = get_all_program_in_department(department_ID)
-            result = Subject_Chair_list.merge(Subject_list,how='right')
-            return result
-    except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
-        return []
+    Subject_Chair_list = get_all_subjectChairs_in_department(role,department_ID)
+    programID_column = Subject_Chair_list['program']
+    program_column = programID_column.apply(get_program)
+    Subject_Chair_list['program']=program_column
+    Subject_list = get_all_program_in_department(department_ID)
+    result = Subject_Chair_list.merge(Subject_list,how='right')
+    return result
