@@ -65,7 +65,6 @@ def upload_to_database(file_path,program,year):
             columns = data.columns
             column_definitions = ", ".join([f"{col} TEXT" for col in columns])
             table_name = program.upper() + year
-            # create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({column_definitions})"
             cursor.execute(
                 f'''
                 CREATE TABLE IF NOT EXISTS {table_name} ({column_definitions})
