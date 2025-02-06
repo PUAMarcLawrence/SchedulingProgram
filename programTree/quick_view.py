@@ -27,14 +27,14 @@ def build_interactive_subject_graph(subjects):
             "layout": {
                 "hierarchical": {
                     "enabled": true,
- 
+                    "levelSeparation": 250,
                     "direction": "LR"
                    
                 }
             },
             "physics": {
                 "hierarchicalRepulsion": {
-                    "centralGravity": 7
+                    "centralGravity": 8
                 },
                 "minVelocity": 0.75,
                 "solver": "hierarchicalRepulsion"
@@ -47,7 +47,7 @@ def build_interactive_subject_graph(subjects):
     for semester, semester_subjects in subjects.items():
         for subject in semester_subjects.keys():
             all_subjects.add(subject)
-
+    
     level_map = 1
     for semester, semester_subjects in subjects.items():
         for subject in semester_subjects.keys():
@@ -68,7 +68,6 @@ def build_interactive_subject_graph(subjects):
                 subject, 
                 title = f_title,
                 label = subject,
-                # color = semester_color, 
                 level = level_map, 
             )
         level_map += 1
@@ -92,9 +91,26 @@ def build_interactive_subject_graph(subjects):
     
     neighbor_map = net.get_adj_list()
 
-    for semester, semester_subjects in subjects.items():
-        for node in net.nodes:
-            node["value"] = len(neighbor_map[node["id"]])
+    color_map = {
+        0:"#e0f7ff", 1:"#b3e5ff", 2:"#80d4ff", 3:"#4dc3ff", 4:"#1ab2ff", 
+        5:"#00aaff", 6:"#ff9966", 7:"#ff6633", 8:"#ff3300", 9:"#ff0000", 
+        10:"#ff073a", 
+    } #e0f7ff, #b3e5ff, #80d4ff, #4dc3ff, #1ab2ff, #00aaff, #ff9966, #ff6633, #ff3300, #ff0000, #ff073a
+    
+    subjects_only = {}
+    for semester_subjects in subjects.values():
+        subjects_only.update(semester_subjects)
+
+    phrases=["2nd year standing","3rd year standing","4th year standing"]
+    
+    for node in net.nodes:
+        for prerequisite in subjects_only[node['id']]['prerequisites']:
+            for phrase in phrases:
+                if phrase.lower() == prerequisite.lower():
+                    node["shape"] = "star"
+        node["value"] = len(neighbor_map[node["id"]])
+        node["color"] = color_map[node["value"]]
+        node["labelHighlightBold"] = "true"
     return net
 
 def format_subjects_for_legend(subjects):
@@ -109,7 +125,10 @@ def format_subjects_for_legend(subjects):
             legend_data.append([subject, title, prerequisites, corequisites,credit_unit])
 
         # Create a DataFrame for the semester
-        df = pd.DataFrame(legend_data, columns=["Subject Code", "Title", "Prerequisites", "Co-requisites","Credit Units"])
+        df = pd.DataFrame(
+            legend_data, 
+            columns=["Subject Code", "Title", "Pre-requisites", "Co-requisites","Credit Units"]
+        )
         semester_tables[semester] = df  # Store DataFrame in a dictionary with semester as the key
     return semester_tables
 
@@ -126,12 +145,35 @@ if tables:
         semester_tables = format_subjects_for_legend(subjects)
         for semester, df in semester_tables.items():
             st.subheader(f"Subjects and Requirements for {semester}")
-            main,sub = st.columns([3,0.5])
+            main,sub = st.columns([3,0.3])
             Total = pd.DataFrame(df)["Credit Units"].sum(axis=0)
-            Total_sum = pd.DataFrame([{"Total Credit Units":Total}])
+            Total_sum = pd.DataFrame([{"Total Units":Total}])
             main.dataframe(
                 df,
                 hide_index=True,
+                column_config={
+                    "Subject Code": st.column_config.TextColumn(
+                       "Subject Code",
+                       width="small",
+                    ),
+                    "Title": st.column_config.TextColumn(
+                       "Title",
+                       width="medium",
+                    ),
+                    "Pre-requisites": st.column_config.ListColumn(
+                       "Prerequisites",
+                       width="medium",
+                    ),
+                    "Co-requisites":st.column_config.ListColumn(
+                        "Co-requisites",
+                        width="small",
+                    ),
+                    "Credit Units":st.column_config.NumberColumn(
+                        "Credit Units",
+                        width="small",
+                    )
+                },
+                height=len(df) * 35 + 40,
                 use_container_width=True
             )
             sub.dataframe(
