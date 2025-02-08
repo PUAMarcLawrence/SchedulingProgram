@@ -36,7 +36,7 @@ def load_subjects_from_db(table_name):
             year = int(year)
         if term != None:
             term = int(term)
-        semester_key = f"{year} - {term}"
+        semester_key = (year, term)
         if semester_key not in subjects:
             subjects[semester_key] = {}
 

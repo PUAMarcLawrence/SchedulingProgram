@@ -5,6 +5,7 @@ import os
 from utils.db_utils import schoolAddrDB,get_programID,get_departmentID,add_department
 
 path = './data'
+path_sandBox = './data/sandBox'
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -12,6 +13,8 @@ def hash_password(password):
 def initialize_db():
     if not os.path.exists(path):
         os.mkdir(path)
+    if not os.path.exists(path_sandBox):
+        os.mkdir(path_sandBox)
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
             conn.execute('PRAGMA foreign_keys = ON;')
@@ -109,7 +112,7 @@ def create_admin(username, password):
     except sqlite3.Error as e:
         return False
 
-def create_user(username, password,department, role, program, color):
+def create_user(username, password, department, role, program, color):
     try:
         # Open database connection
         with sqlite3.connect(schoolAddrDB) as conn:
@@ -145,7 +148,7 @@ def check_login(username, password):
             cursor = conn.cursor()
             cursor.execute(
                 '''
-                SELECT username, password, role, department_ID, program_ID, color
+                SELECT ID, username, password, role, department_ID, program_ID, color
                 FROM users 
                 WHERE username = :username AND password = :password
                 ''',

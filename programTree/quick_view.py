@@ -51,7 +51,6 @@ def build_interactive_subject_graph(subjects):
     level_map = 1
     for semester, semester_subjects in subjects.items():
         for subject in semester_subjects.keys():
-            
             f_title = f"""[{semester}]
                             {subject}\n"""
             if semester_subjects[subject]['prerequisites'] != []:
@@ -62,8 +61,6 @@ def build_interactive_subject_graph(subjects):
                 f_title += f"Pre-Req: {c_req}\n"
             f_title += f"""Credit: {semester_subjects[subject]['credit_unit']}
                             Care Taker: {semester_subjects[subject]['care_taker']}"""
-
-            # Set the node level to ensure vertical alignment
             net.add_node(
                 subject, 
                 title = f_title,
@@ -142,9 +139,19 @@ if tables:
             build_interactive_subject_graph(subjects).generate_html(),
             height=800
         )
+        with st.popover("Show Legend",use_container_width=True):
+            st.markdown(
+                """
+                ### Legend
+                - ─── **Solid Line**: Pre-Requisite
+                - \- - - **Broken Line**: Co-Requisite
+                - ⭐ **Star Node**: Year Standing Prerequisite
+                """
+                )
+
         semester_tables = format_subjects_for_legend(subjects)
-        for semester, df in semester_tables.items():
-            st.subheader(f"Subjects and Requirements for {semester}")
+        for (year,semester), df in semester_tables.items():
+            st.subheader(f"Year {year} - Semester {semester}")
             main,sub = st.columns([3,0.3])
             Total = pd.DataFrame(df)["Credit Units"].sum(axis=0)
             Total_sum = pd.DataFrame([{"Total Units":Total}])
@@ -173,16 +180,12 @@ if tables:
                         width="small",
                     )
                 },
-                height=len(df) * 35 + 40,
+                height=len(df) * 35 + 35,
                 use_container_width=True
             )
             sub.dataframe(
                 Total_sum,
-                hide_index=True,
-                
+                hide_index=True,  
             )
-
-            
-
 else:
     st.error("No Curriculum found in the database")
