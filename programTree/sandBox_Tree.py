@@ -5,17 +5,6 @@ from utils.programTree_db_utils import load_subjects_from_db, get_table_names
 from utils.sandBox_db_utils import copy_table   
 
 st.set_page_config(layout="wide")
-with st.popover("New Sandbox"):
-    option = st.selectbox("Options", ("From Scratch", "Copy from existing curriculum"))
-    if st.button("Create"):
-        if option == "Copy from existing curriculum":
-            if copy_table('data/ece.db',st.session_state['ID'],'ECE2024','ECE2025'):
-                st.success("Table copied successfully")
-            else:
-                st.error("Curriculum name in use.")
-        else:
-            st.session_state['ID'] = str(int(time.time()))
-            st.success("New Sandbox created successfully")
 
 def format_subjects_for_legend(subjects):
     semester_tables = {}
@@ -35,6 +24,27 @@ def format_subjects_for_legend(subjects):
         )
         semester_tables[semester] = df  # Store DataFrame in a dictionary with semester as the key
     return semester_tables
+
+First,Second = st.columns(2)
+with First.popover("New Sandbox"):
+    option = st.selectbox("Sandbox Options", ("Open Existing Sandbox", "Create New Sanndbox"))
+    if option == "Create New Sanndbox":
+        option = st.selectbox("Options", ("From Scratch", "Copy from existing curriculum"))
+        if st.button("Create"):
+            if option == "Copy from existing curriculum":
+                if copy_table('data/ece.db',st.session_state['ID'],'ECE2024','ECE2025'):
+                    st.success("Table copied successfully")
+                    time.sleep(2)
+                    st.rerun()
+                else:
+                    st.error("Curriculum name in use.")
+            else:
+                st.session_state['ID'] = str(int(time.time()))
+                st.success("New Sandbox created successfully")
+    else:
+        Existing_sandboxes = st.selectbox("Select Sandbox",("ECE2025","ECE2024"))
+        if st.button("Open"):
+            st.success("opened successfully")
 
 # Create dynamic tabs
 open_tables = (get_table_names())

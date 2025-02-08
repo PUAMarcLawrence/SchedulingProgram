@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 
-eceAddrDB = 'data/ece.db'
+eceAddrDB = 'data/eece.db'
 
 # ===================================== Quickview page ======================================
 def get_table_names():
