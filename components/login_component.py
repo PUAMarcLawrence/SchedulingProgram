@@ -73,11 +73,12 @@ def login():
         if login_result:
             st.session_state.update({
                 'loggedIn': True,
-                'username': login_result[0],
-                'department_ID':login_result[3],
-                'role': login_result[2],
-                'program_ID': login_result[4],
-                'color': login_result[5],
+                'ID': login_result[0],
+                'username': login_result[1],
+                'department_ID':login_result[4],
+                'role': login_result[3],
+                'program_ID': login_result[5],
+                'color': login_result[6],
                 'delete_mode': False
             })
             st.success("Logged in successfully!")

@@ -73,7 +73,6 @@ programTree_pages = [quickView, sandbox_programTree, upload_curiculum]
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
-# Taging pages to thier ROLE restrictions
 if st.session_state.role in ["Admin"]:
     page_dict["Admin"] = admin_pages
 if st.session_state.role in ["Dean"]:
