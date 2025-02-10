@@ -63,6 +63,12 @@
 
 ![Product Name Screen Shot][product-screenshot]
 
+The Scheduling Tools project is a web-based application built with Streamlit, an open-source Python framework for creating interactive data applications. It is designed and published for the faculty of Mapúa University to enhance and simplify professors' schedule planning for upcoming semesters.
+
+Professors and department heads can add, remove, and create subjects for each program, semester, and school year. Additionally, the Scheduling Tools application includes a feature that allows faculty members to add, create, and view program trees, enabling them to evaluate subjects from past and upcoming semesters.
+
+The program is designed to be accessed through the university's local network, allowing faculty members to manage their own subjects and schedules efficiently.
+
 Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
