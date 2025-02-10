@@ -1,6 +1,7 @@
 import streamlit as st
 from components.login_component import login, register, AdminRegistration
-from utils.login_db_utils import check_anyUser, initialize_db
+from utils.login_db_utils import check_anyUser
+from utils.db_utils import initialize_db
 
 # initializing session states
 if "role" not in st.session_state:
@@ -52,22 +53,22 @@ quickView = st.Page(
     icon=":material/account_tree:",)
     # default=(role == "Subject Chair" or role == "Dean"),)
 
-sandbox_programTree = st.Page(
-    "programTree/sandBox_Tree.py", 
-    title="SandBox", 
-    icon=":material/handyman:")
+# sandbox_programTree = st.Page(
+#     "programTree/sandBox_Tree.py", 
+#     title="SandBox", 
+#     icon=":material/handyman:")
 
-upload_curiculum = st.Page(
-    "programTree/upload_file.py",
-    title="Upload Curiculum",
-    icon=":material/upload:")
+# upload_curiculum = st.Page(
+#     "programTree/upload_file.py",
+#     title="Upload Curiculum",
+#     icon=":material/upload:")
 
 # ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
 dean_pages = [subject_chair_management]
 admin_pages = [manage_users]
 scheduling_pages = [school_scheduling]
-programTree_pages = [quickView, sandbox_programTree, upload_curiculum]
+programTree_pages = [quickView,]# sandbox_programTree, upload_curiculum]
 
 # ========================== Main Program ===============================
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
