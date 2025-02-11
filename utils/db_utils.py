@@ -131,3 +131,32 @@ def add_program(program,department):
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
         return False
+    
+def get_department(department_ID):
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                '''
+                SELECT department 
+                FROM departments WHERE department_ID = :department_ID
+                ''',
+                {'department_ID':department_ID})
+            return cursor.fetchone()[0]
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
+    
+def get_department_programs(department_ID):
+    if department_ID == None:
+        return []
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT program FROM programs WHERE department_ID = :department", {'department': department_ID})
+            programs = [row[0] for row in cursor.fetchall()]
+        return programs
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return []
+

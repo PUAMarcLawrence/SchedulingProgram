@@ -45,21 +45,6 @@ def get_departments():
         print(f"Database connection error: {e}")
         return []
 
-def get_programs(department):
-    if department == None:
-        return []
-    try:
-        with sqlite3.connect(schoolAddrDB) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT department_ID FROM departments WHERE department = :department", {'department': department})
-            department_ID = cursor.fetchone()[0]
-            cursor.execute("SELECT program FROM programs WHERE department_ID = :department", {'department': department_ID})
-            programs = [row[0] for row in cursor.fetchall()]
-        return programs
-    except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
-        return []
-
 def get_vacant_programs(department):
     if department == None:
         return []
