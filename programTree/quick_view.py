@@ -160,7 +160,7 @@ if tables:
         semester_tables = format_subjects_for_legend(subjects)
         for (year,semester), df in semester_tables.items():
             st.subheader(f"Year {year} - Semester {semester}")
-            main,sub = st.columns([3,0.3])
+            main,sub = st.columns([3,0.4])
             Total = pd.DataFrame(df)["Credit Units"].sum(axis=0)
             Total_sum = pd.DataFrame([{"Total Units":Total}])
             main.dataframe(
