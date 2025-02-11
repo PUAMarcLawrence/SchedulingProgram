@@ -1,6 +1,7 @@
 import streamlit as st
 from components.login_component import login, register, AdminRegistration
-from utils.login_db_utils import check_anyUser, initialize_db
+from utils.login_db_utils import check_anyUser
+from utils.db_utils import initialize_db
 
 # initializing session states
 if "role" not in st.session_state:

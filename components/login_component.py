@@ -1,9 +1,9 @@
-# Login form components
-import time
 import streamlit as st
-from utils.login_db_utils import create_admin, create_user, check_login, get_departments, get_programs
+import time
+from utils.login_db_utils import create_admin,  get_departments, get_vacant_programs, create_user, check_login
 
 def AdminRegistration():
+    st.set_page_config(layout="centered")
     st.title("Admin Registration")
     admin_user = st.text_input("Enter the Admin Username")
     admin_pass = st.text_input("Enter the Admin Password",type="password")
@@ -36,7 +36,7 @@ def register():
             disabled=role==None)
         program = fourth.selectbox(
             "Program",
-            get_programs(department),
+            get_vacant_programs(department),
             index=None,
             placeholder="Select a program",
             disabled=department==None)

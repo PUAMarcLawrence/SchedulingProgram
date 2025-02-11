@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from pyvis.network import Network
-from utils.programTree_db_utils import get_table_names, load_subjects_from_db
+from utils.programTree_db_utils import get_table_names,load_subjects_from_db
+from utils.db_utils import get_department_programs,get_program
 
 st.set_page_config(layout="wide")
 
@@ -129,11 +130,19 @@ def format_subjects_for_legend(subjects):
         semester_tables[semester] = df  # Store DataFrame in a dictionary with semester as the key
     return semester_tables
 
-tables = get_table_names()
-if tables:
-    select_table = st.selectbox("Select a curriculum:",tables)
-    subjects = load_subjects_from_db(select_table)
+if st.session_state['role'] == "Dean":
+    program = st.selectbox(
+        "Select Program to view:",
+        get_department_programs(st.session_state['department_ID'])
+    )
+else:
+    program = st.session_state['program_ID']
+    program = get_program(program)
 
+tables = get_table_names(st.session_state['department_ID'],program)
+if tables:
+    select_table = st.selectbox('Select a curriculum:',tables)
+    subjects = load_subjects_from_db(st.session_state['department_ID'],program,select_table)
     if subjects:
         st.components.v1.html(
             build_interactive_subject_graph(subjects).generate_html(),
@@ -148,11 +157,10 @@ if tables:
                 - ⭐ **Star Node**: Year Standing Prerequisite
                 """
                 )
-
         semester_tables = format_subjects_for_legend(subjects)
         for (year,semester), df in semester_tables.items():
             st.subheader(f"Year {year} - Semester {semester}")
-            main,sub = st.columns([3,0.3])
+            main,sub = st.columns([3,0.4])
             Total = pd.DataFrame(df)["Credit Units"].sum(axis=0)
             Total_sum = pd.DataFrame([{"Total Units":Total}])
             main.dataframe(
@@ -175,7 +183,7 @@ if tables:
                         "Co-requisites",
                         width="small",
                     ),
-                    "Credit Units":st.column_config.NumberColumn(
+                    "Credit Units":st.column_config.Column(
                         "Credit Units",
                         width="small",
                     )
@@ -188,4 +196,5 @@ if tables:
                 hide_index=True,  
             )
 else:
-    st.error("No Curriculum found in the database")
+    st.warning(f"No curriculum found in the database.")
+    select_table = None

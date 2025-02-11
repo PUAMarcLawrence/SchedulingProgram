@@ -1,7 +1,9 @@
 import sqlite3
 
-def copy_table(source_db, userID, source_table_name, new_table_name):
-    dest_db = f'data/sandBox/{userID}_sandBox.db'
+
+def copy_table(department,program, userID, source_table_name, new_table_name):
+    source_db = f'./data/curriculum/{department}/{program}_curriculum.db'
+    dest_db = f'./data/sandBox/{userID}_sandBox.db'
     try:
         with sqlite3.connect(source_db) as source_conn, sqlite3.connect(dest_db) as dest_conn:
             source_cursor = source_conn.cursor()
@@ -43,20 +45,13 @@ def copy_table(source_db, userID, source_table_name, new_table_name):
         print(f"Database connection error: {e}")
         return False
 
-def create_sandTable(userID,table_name):
-    sandAddrDB = f'data/sandBox/{userID}_sandBox.db'
+def get_sand_names(userID):
+    sand_db = f'./data/sandBox/{userID}_sandBox.db'
     try:
-        with sqlite3.connect(sandAddrDB) as conn:
-            conn.execute(f'''CREATE TABLE IF NOT EXISTS sandBox_Dir (
-                        table_name TEXT PRIMARY KEY,
-                        userID INT,
-                        userID FOREIGN KEY)''')
-            
-            conn.execute(f'''CREATE TABLE IF NOT EXISTS {table_name} (
-                        username TEXT PRIMARY KEY, 
-                        password TEXT, 
-                        role TEXT, 
-                        color Text)''')
+        with sqlite3.connect(sand_db) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            return [row[0] for row in cursor.fetchall()]
     except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
-        return False
+        print(f"An error occurred: {e}")
+        return []

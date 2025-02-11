@@ -1,58 +1,5 @@
-# Functions for authentication and password hashing
 import sqlite3
-import hashlib
-import os
-from utils.db_utils import schoolAddrDB,get_programID,get_departmentID,add_department
-
-path = './data'
-path_sandBox = './data/sandBox'
-
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def initialize_db():
-    if not os.path.exists(path):
-        os.mkdir(path)
-    if not os.path.exists(path_sandBox):
-        os.mkdir(path_sandBox)
-    try:
-        with sqlite3.connect(schoolAddrDB) as conn:
-            conn.execute('PRAGMA foreign_keys = ON;')
-            conn.execute(
-                '''
-                CREATE TABLE IF NOT EXISTS departments(
-                department_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                department TEXT NOT NULL UNIQUE
-                )
-                '''
-            )
-            conn.execute(
-                '''
-                CREATE TABLE IF NOT EXISTS programs (
-                    program_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    program TEXT NOT NULL UNIQUE,
-                    department_ID INTEGER NOT NULL,
-                    FOREIGN KEY(department_ID) REFERENCES departments(department_ID)
-                )
-                '''
-            )
-            conn.execute(
-                '''
-                CREATE TABLE IF NOT EXISTS users (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT NOT NULL UNIQUE, 
-                    password TEXT NOT NULL UNIQUE,
-                    role TEXT NOT NULL,
-                    department_ID INTEGER,
-                    program_ID INTEGER UNIQUE,
-                    color TEXT NOT NULL UNIQUE,
-                    FOREIGN KEY(department_ID) REFERENCES departments(department_ID),
-                    FOREIGN KEY(program_ID) REFERENCES programs(program_ID)
-                )
-                '''
-            )
-    except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
+from utils.db_utils import schoolAddrDB, hash_password, add_department, get_departmentID, get_programID,get_program
 
 def check_anyUser():
     try:
@@ -65,32 +12,6 @@ def check_anyUser():
     except sqlite3.Error as e:
         print(f"Database connection error: {e}")
         return False
-
-def get_departments():
-    try:
-        with sqlite3.connect(schoolAddrDB) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT department FROM departments")
-            departments = [row[0] for row in cursor.fetchall()]
-        return departments
-    except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
-        return []
-
-def get_programs(department):
-    if department == None:
-        return []
-    try:
-        with sqlite3.connect(schoolAddrDB) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT department_ID FROM departments WHERE department = :department", {'department': department})
-            department_ID = cursor.fetchone()[0]
-            cursor.execute("SELECT program FROM programs WHERE department_ID = :department", {'department': department_ID})
-            programs = [row[0] for row in cursor.fetchall()]
-        return programs
-    except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
-        return []
 
 def create_admin(username, password):
     try:
@@ -110,7 +31,58 @@ def create_admin(username, password):
                     })
         return True
     except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
         return False
+
+def get_departments():
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT department FROM departments")
+            departments = [row[0] for row in cursor.fetchall()]
+        return departments
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return []
+
+def get_vacant_programs(department):
+    if department == None:
+        return []
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT department_ID 
+                FROM departments 
+                WHERE department = :department
+                """, 
+                {'department': department}
+            )
+            department_ID = cursor.fetchone()[0]
+            cursor.execute(
+                """
+                SELECT program_ID 
+                FROM users 
+                WHERE department_ID = :department
+                """, 
+                {'department': department_ID}
+            )
+            registered_programs = [row[0] for row in cursor.fetchall()]
+            cursor.execute(
+                """
+                SELECT program_ID, program 
+                FROM programs 
+                WHERE department_ID = :department
+                """, 
+                {'department': department_ID}
+            )
+            programs_in_department = [row[0] for row in cursor.fetchall()]
+            unregistered_programs = [x for x in programs_in_department if x not in registered_programs]
+            return [get_program(programID) for programID in unregistered_programs]
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return []
 
 def create_user(username, password, department, role, program, color):
     try:
@@ -141,7 +113,7 @@ def create_user(username, password, department, role, program, color):
         return {"success": False, "message": f"Database error: {e}"}
     except ValueError as ve:
         return {"success": False, "message": str(ve)}
-
+    
 def check_login(username, password):
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
@@ -162,7 +134,7 @@ def check_login(username, password):
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         return None 
-
+    
 def check_old_password(username,old_password):
     try:
         with sqlite3.connect(schoolAddrDB) as conn:

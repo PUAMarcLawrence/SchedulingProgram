@@ -1,6 +1,7 @@
 # Description: This file contains the code for the subject chair management system.
 import streamlit as st
-from utils.db_utils import get_subjectChair_Dean,add_program,remove_dean_program
+from utils.dean_db_utils import get_subjectChair_Dean, delete_program_dean, modify_program_dean
+from utils.db_utils import add_program
 
 def add_DepartmentProgram():
     if st.session_state['new_program']:
@@ -9,42 +10,63 @@ def add_DepartmentProgram():
         else:
             st.error("Program already exists.")
 
-def remove_Departmentprogram():
-    if st.session_state['selected_program']:
-        if remove_dean_program(st.session_state['selected_program'],st.session_state['department_ID']):
-            st.success("Program removed successfully.")
-        else:
-            st.error("Program selected has a subject chair assigned to it. Please reassign the subject chair before removing the program.")
-
-def remove_new():
-    select_box,button = st.columns(2)
-    select_box.selectbox(
-        "Select a Program to remove:",
-        get_subjectChair_Dean("Subject Chair",st.session_state['department_ID'])['Program'].unique(),
-        key="selected_program")
-    button.button(
-        "Remove", 
-        on_click=remove_Departmentprogram)
-
-def add_new():
-    text_box,button = st.columns(2)
-    text_box.text_input(
-        "Add new Program:", 
-        help="Enter a Program Code Example(ECE,CPE,EE etc)",
-        key="new_program",
-        label_visibility="visible",)
-    button.button(
-        "Add", 
-        on_click=add_DepartmentProgram)
-
 # Main app layout
 st.title("Subject Chair List")
-option = st.selectbox("Choose an option",["Add New Program","Remove Program"])
-if option == "Add New Program":
-    add_new()
-else:
-    remove_new()
+text_box,button,modify = st.columns([3,1,1])
+text_box.text_input(
+    "Add new Program:", 
+    help="Enter a Program Code Example(ECE,CPE,EE etc)",
+    value=None,
+    key="new_program",
+    label_visibility="visible",)
+button.button(
+    "Add", 
+    on_click=add_DepartmentProgram,
+    disabled=st.session_state['new_program'] == None)
+original_data = get_subjectChair_Dean("Subject Chair",st.session_state['department_ID'])
 st.dataframe(
-    get_subjectChair_Dean("Subject Chair",st.session_state['department_ID']),
-        use_container_width=True,
-        hide_index=True)
+    original_data,
+    column_config={
+        "program": st.column_config.Column(
+            "Program",
+        ),
+        "username": st.column_config.Column(
+            "Program Chair",
+        ),
+        "program_ID": None
+    },
+    use_container_width=True,
+    hide_index=True)
+
+with modify.popover("Modify"):
+    option = st.selectbox(
+        "Select",
+        ("Modify","Delete"),
+        label_visibility="collapsed"
+    )
+    program = st.selectbox(
+        "Select a program to modify/delete",
+        (original_data[original_data['username'].isna()]['program']),
+        help="If the program is not in the list, that means a user is already assigned to it.",
+    )
+    if option == "Modify":
+        new_program = st.text_input(
+            "New Program Name",
+            label_visibility="visible",
+            help="Enter a Program Code Example(ECE,CPE,EE etc)"
+        )
+    if st.button(option):
+        if option == "Modify":
+            if modify_program_dean(program,new_program):
+                st.success("Modified")
+                st.rerun()
+            else:
+                st.error("Program name already exists.")
+        else:
+            if delete_program_dean(program):
+                st.success("Deleted")
+                st.rerun()
+            else:
+                st.error("An error occurred.")
+    st.warning("This action cannot be UNDONE!")
+
