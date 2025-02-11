@@ -53,6 +53,10 @@ def initialize_db():
     except sqlite3.Error as e:
         print(f"Database connection error: {e}")
 
+def initialize_department_dir(department):
+    if not os.path.exists(f'./data/curriculum/{department}'):
+        os.mkdir(f'./data/curriculum/{department}')
+
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
