@@ -59,7 +59,7 @@ def build_interactive_subject_graph(subjects):
                 f_title += f"Pre-Req: {p_req}\n"
             if semester_subjects[subject]['corequisites'] != []:
                 c_req = ", ".join(semester_subjects[subject]['corequisites'])
-                f_title += f"Pre-Req: {c_req}\n"
+                f_title += f"Co-Req: {c_req}\n"
             f_title += f"""Credit: {semester_subjects[subject]['credit_unit']}
                             Care Taker: {semester_subjects[subject]['care_taker']}"""
             net.add_node(
