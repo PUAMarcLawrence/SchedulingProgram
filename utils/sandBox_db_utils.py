@@ -55,3 +55,56 @@ def get_sand_names(userID):
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
         return []
+
+def load_from_sand_db(userID,sandBox_name):
+    sand_db = f'./data/sandBox/{userID}_sandBox.db'
+    try:
+        with sqlite3.connect(sand_db) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT * FROM {sandBox_name}")
+            subjects = cursor.fetchall()
+           
+            return subjects
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return {}
+
+def format_data_to_Graph(data):
+    subjects_dict = {}
+    for row in data:
+        year,term,subject_code,title,lec_hrs,lab_hrs,credit_units,prerequisites,corequisites,care_taker = row
+        prerequisites = prerequisites.split(',') if prerequisites else []
+        corequisites = corequisites.split(',') if corequisites else []
+        if year != None:
+            year = int(year)
+        if term != None:
+            term = int(term)
+        semester_key = (year, term)
+        if semester_key not in subjects_dict:
+            subjects_dict[semester_key] = {}
+
+        subjects_dict[semester_key][subject_code] = {
+            "title": title,
+            "lec_hrs":lec_hrs,
+            "lab_hrs":lab_hrs,
+            "prerequisites": [prereq.strip() for prereq in prerequisites],
+            "corequisites": [coreq.strip() for coreq in corequisites],
+            "credit_unit": credit_units,
+            "care_taker": care_taker
+        }
+    return subjects_dict
+
+def save_data_to_sand_db(data,userID,sandBox_name):
+    sand_db = f'./data/sandBox/{userID}_sandBox.db'
+    try:
+        with sqlite3.connect(sand_db) as conn:
+            conn.execute(f"DELETE FROM {sandBox_name};")
+            # print(data)
+            conn.executemany(
+                f"""
+                INSERT INTO {sandBox_name}(Year,Term,Code,Title,[Lec Hrs],[Lab Hrs],[Credit Units],Prerequisites,Co_requisites,[Care Taker])
+                VALUES(?,?,?,?,?,?,?,?,?,?)""",data)
+            return True
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return False

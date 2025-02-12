@@ -12,7 +12,7 @@ def add_DepartmentProgram():
 
 # Main app layout
 st.title("Subject Chair List")
-text_box,button,modify = st.columns([3,1,1])
+text_box,button,modify = st.columns([3,0.3,0.6])
 text_box.text_input(
     "Add new Program:", 
     help="Enter a Program Code Example(ECE,CPE,EE etc)",
@@ -20,7 +20,7 @@ text_box.text_input(
     key="new_program",
     label_visibility="visible",)
 button.button(
-    "Add", 
+    "➕", 
     on_click=add_DepartmentProgram,
     disabled=st.session_state['new_program'] == None)
 original_data = get_subjectChair_Dean("Subject Chair",st.session_state['department_ID'])
