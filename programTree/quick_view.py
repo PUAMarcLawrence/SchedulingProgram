@@ -28,7 +28,7 @@ def build_interactive_subject_graph(subjects):
             "layout": {
                 "hierarchical": {
                     "enabled": true,
-                    "levelSeparation": 250,
+                    "levelSeparation": 150,
                     "direction": "LR"
                    
                 }
@@ -50,9 +50,9 @@ def build_interactive_subject_graph(subjects):
             all_subjects.add(subject)
     
     level_map = 1
-    for semester, semester_subjects in subjects.items():
+    for (year,semester), semester_subjects in subjects.items():
         for subject in semester_subjects.keys():
-            f_title = f"""[{semester}]
+            f_title = f"""Year {year} - Semester {semester}
                             {subject}\n"""
             if semester_subjects[subject]['prerequisites'] != []:
                 p_req = ", ".join(semester_subjects[subject]['prerequisites'])
@@ -102,13 +102,15 @@ def build_interactive_subject_graph(subjects):
     phrases=["2nd year standing","3rd year standing","4th year standing"]
     
     for node in net.nodes:
+        node["value"] = len(neighbor_map[node["id"]])
+        node["color"] = color_map[node["value"]]
+        print(node['value'])
+        node["labelHighlightBold"] = "true"
         for prerequisite in subjects_only[node['id']]['prerequisites']:
             for phrase in phrases:
                 if phrase.lower() == prerequisite.lower():
                     node["shape"] = "star"
-        node["value"] = len(neighbor_map[node["id"]])
-        node["color"] = color_map[node["value"]]
-        node["labelHighlightBold"] = "true"
+                    node["value"] = 10
     return net
 
 def format_subjects_for_legend(subjects):
