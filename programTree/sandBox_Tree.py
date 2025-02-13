@@ -105,7 +105,6 @@ def build_interactive_subject_graph(subjects):
     for node in net.nodes:
         node["value"] = len(neighbor_map[node["id"]])
         node["color"] = color_map[node["value"]]
-        print(node['value'])
         node["labelHighlightBold"] = "true"
         for prerequisite in subjects_only[node['id']]['prerequisites']:
             for phrase in phrases:
