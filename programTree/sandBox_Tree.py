@@ -1,6 +1,5 @@
 import streamlit as st
 import time
-from pyvis.network import Network
 from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db
 from utils.db_utils import get_department_programs,get_program,get_department
 from utils.quickView_db_utils import get_table_names

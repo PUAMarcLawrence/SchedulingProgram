@@ -87,7 +87,6 @@ def format_for_graph(department_ID,program,table):
                     "credit_unit": credit_units,
                     "care_taker": care_taker
                 }
-            print(subjects_dict)
             return subjects_dict
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
