@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-from pyvis.network import Network
-from utils.programTree_db_utils import get_table_names,load_subjects_from_db
+from utils.quickView_db_utils import get_table_names,load_subjects_from_db,format_for_graph
 from utils.db_utils import get_department_programs,get_program
 from utils.graph_utils import build_interactive_subject_graph
 
@@ -9,21 +8,25 @@ st.set_page_config(layout="wide")
 
 def format_subjects_for_legend(subjects):
     semester_tables = {}
+
     for semester, semester_subjects in subjects.items():
         legend_data = []
-        for subject, details in semester_subjects.items():
+        for subject,details in semester_subjects.items():
+            year = details['year']
+            sem = details['term']
             title = details['title']
-            prerequisites = ', '.join(details['prerequisites']) if details['prerequisites'] else "None"
-            corequisites = ', '.join(details['corequisites']) if details['corequisites'] else "None"
+            lec_hrs = details['lec_hrs'] if details['lec_hrs'] else None
+            lab_hrs = details['lab_hrs'] if details['lab_hrs'] else None
+            prerequisites = ', '.join(details['prerequisites']) if details['prerequisites'] else None
+            corequisites = ', '.join(details['corequisites']) if details['corequisites'] else None
             credit_unit = details['credit_unit']
-            legend_data.append([subject, title, prerequisites, corequisites,credit_unit])
-
-        # Create a DataFrame for the semester
+            care_taker = details['care_taker']
+            legend_data.append([year,sem,subject, title, lec_hrs, lab_hrs, credit_unit, prerequisites, corequisites, care_taker])
         df = pd.DataFrame(
-            legend_data, 
-            columns=["Subject Code", "Title", "Pre-requisites", "Co-requisites","Credit Units"]
+            legend_data,
+            columns=["Yr","Term","Subject Code", "Course Title", "Lec Hrs","Lab Hrs","Credit Units","Pre-requisites", "Co-requisites","Care Taker"]
         )
-        semester_tables[semester] = df  # Store DataFrame in a dictionary with semester as the key
+        semester_tables[semester] = df
     return semester_tables
 
 if st.session_state['role'] == "Dean":
@@ -38,10 +41,11 @@ else:
 tables = get_table_names(st.session_state['department_ID'],program)
 if tables:
     select_table = st.selectbox('Select a curriculum:',tables)
-    subjects = load_subjects_from_db(st.session_state['department_ID'],program,select_table)
-    if subjects:
+    curriculum = load_subjects_from_db(st.session_state['department_ID'],program,select_table)
+    curriculum_graph = format_for_graph(st.session_state['department_ID'],program,select_table)
+    if curriculum:
         st.components.v1.html(
-            build_interactive_subject_graph(subjects).generate_html(),
+            build_interactive_subject_graph(curriculum_graph).generate_html(),
             height=800
         )
         with st.popover("Show Legend",use_container_width=True):
@@ -53,53 +57,58 @@ if tables:
                 - ⭐ **Star Node**: Year Standing Prerequisite
                 """
                 )
-        semester_tables = format_subjects_for_legend(subjects)
         year_tabs = []
-        for (year,semster), df in semester_tables.items():
+        for year, year_subjects in curriculum.items():
             year_tabs.append("Year " + str(year))
-        year_tabs = list(set(year_tabs))
         tabs = st.tabs(year_tabs)
         for i, tab in enumerate(tabs):
             with tab:
-                st.write(f"Data for {year_tabs[i]}")
-        
-        for (year,semester), df in semester_tables.items():
-            st.subheader(f"Year {year} - Semester {semester}")
-            main,sub = st.columns([3,0.4])
-            Total = pd.DataFrame(df)["Credit Units"].sum(axis=0)
-            Total_sum = pd.DataFrame([{"Total Units":Total}])
-            main.dataframe(
-                df,
-                hide_index=True,
-                column_config={
-                    "Subject Code": st.column_config.TextColumn(
-                       "Course Code",
-                       width="small",
-                    ),
-                    "Title": st.column_config.TextColumn(
-                       "Course Title",
-                       width="medium",
-                    ),
-                    "Pre-requisites": st.column_config.ListColumn(
-                       "Pre-Requisites",
-                       width="medium",
-                    ),
-                    "Co-requisites":st.column_config.ListColumn(
-                        "Co-Requisites",
-                        width="small",
-                    ),
-                    "Credit Units":st.column_config.Column(
-                        "Credit Units",
-                        width="small",
+                semester_tables = format_subjects_for_legend(curriculum[i+1])
+                for semester,subjects in semester_tables.items():
+                    st.subheader(f"Year {i+1} - Semester {semester}")
+                    main,sub = st.columns([6,0.4])
+                    subjects = pd.DataFrame(subjects)
+                    total_lec = pd.DataFrame(subjects)["Lec Hrs"].sum(axis=0)
+                    total_lab = pd.DataFrame(subjects)["Lab Hrs"].sum(axis=0)
+                    total_cred = pd.DataFrame(subjects)["Credit Units"].sum(axis=0)
+                    Total_row = pd.DataFrame(
+                        {
+                            'Course Title': ['TOTAL'],
+                            'Lec Hrs': [total_lec],
+                            'Lab Hrs': [total_lab],
+                            'Credit Units': [total_cred]
+                            
+                        }
                     )
-                },
-                height=len(df) * 35 + 35,
-                use_container_width=True
-            )
-            sub.dataframe(
-                Total_sum,
-                hide_index=True,  
-            )
+                    df = pd.concat([subjects, Total_row], ignore_index=True)
+                    st.dataframe(
+                        df,
+                        column_config={
+                            "Subject Code": st.column_config.TextColumn(
+                            "Course Code",
+                            width="small",
+                            ),
+                            "Course Title": st.column_config.TextColumn(
+                            "Course Title",
+                            width="medium",
+                            ),
+                            "Pre-requisites": st.column_config.ListColumn(
+                            "Pre-Requisites",
+                            width="medium",
+                            ),
+                            "Co-requisites":st.column_config.ListColumn(
+                                "Co-Requisites",
+                                width="medium",
+                            ),
+                            "Credit Units":st.column_config.Column(
+                                "Credit Units",
+                                width="small",
+                            )
+                        },
+                        hide_index=True,
+                        use_container_width=True,
+                        height=len(df) * 35 + 38,
+                    )
 else:
     st.warning(f"No curriculum found in the database.")
     select_table = None

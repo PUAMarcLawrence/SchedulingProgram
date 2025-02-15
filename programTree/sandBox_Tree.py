@@ -3,7 +3,7 @@ import time
 from pyvis.network import Network
 from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db
 from utils.db_utils import get_department_programs,get_program,get_department
-from utils.programTree_db_utils import get_table_names
+from utils.quickView_db_utils import get_table_names
 from utils.graph_utils import build_interactive_subject_graph
 
 st.set_page_config(layout="wide")
@@ -49,7 +49,6 @@ if open_sandBox:
     for i, tab in enumerate(tabs):
         with tab:
             main,save,settings = st.columns([4.5,0.5,0.3])
-            main.write(f"Data for {open_sandBox[i]}")
             subjects = load_from_sand_db(st.session_state['ID'],open_sandBox[i])
             if subjects:
                 # semester_tables = format_subjects_for_legend(subjects)
