@@ -5,7 +5,7 @@ import os
 db_path = './data'
 path_sandBox = './data/sandBox'
 path_curriculum = './data/curriculum'
-schoolAddrDB = 'data/school.db'
+schoolAddrDB = './data/school.db'
 
 def initialize_db():
     if not os.path.exists(db_path):

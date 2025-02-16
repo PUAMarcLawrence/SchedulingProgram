@@ -50,7 +50,6 @@ if open_sandBox:
             main,save,settings = st.columns([4.5,0.5,0.3])
             subjects = load_from_sand_db(st.session_state['ID'],open_sandBox[i])
             if subjects:
-                # semester_tables = format_subjects_for_legend(subjects)
                 Edited_data = st.data_editor(
                     subjects,
                     column_config={
@@ -111,4 +110,5 @@ if open_sandBox:
                 )
             with settings.popover("",icon="🔧"):
                 st.write("Settings")
+                option = st.selectbox
             

@@ -1,34 +1,40 @@
-import io
-import sqlite3
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import sqlite3
+import io
+from utils.db_utils import hash_password
 from datetime import datetime, timedelta
-from utils.db_utils import schoolAddrDB
+
+
+schoolAddrDB = './data/school.db'
 
 def initialize_db():
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
-            cursor = conn.cursor()
-
+            conn.execute('''CREATE TABLE IF NOT EXISTS users (
+                    username TEXT PRIMARY KEY,
+                    password TEXT,
+                    role TEXT,
+                    color TEXT)''')
             conn.execute('''CREATE TABLE IF NOT EXISTS schedules (
-                            class_name TEXT,
-                            section TEXT,
-                            start_time TEXT,
-                            end_time TEXT,
-                            days TEXT,
-                            username TEXT,
-                            curriculum TEXT,
-                            school_year TEXT)''')
-
+                    class_name TEXT,
+                    section TEXT,
+                    start_time TEXT,
+                    end_time TEXT,
+                    days TEXT,
+                    username TEXT,
+                    curriculum TEXT,
+                    school_year TEXT)''')
+            cursor = conn.cursor()
             # If the table already exists, add the curriculum and school_year columns to schedules
             cursor.execute("PRAGMA table_info(schedules)")
             columns = [column[1] for column in cursor.fetchall()]
             if 'curriculum' not in columns:
-                conn.execute("ALTER TABLE schedules ADD COLUMN curriculum TEXT")
+                cursor.execute("ALTER TABLE schedules ADD COLUMN curriculum TEXT")
             if 'school_year' not in columns:
-                conn.execute("ALTER TABLE schedules ADD COLUMN school_year TEXT")
+                cursor.execute("ALTER TABLE schedules ADD COLUMN school_year TEXT")
     except sqlite3.Error as e:
-        print(f"Database error: {e}")
+        print(f"Database connection error: {e}")
 
 class School:
     def __init__(self):
@@ -49,19 +55,19 @@ class School:
     def add_class(self, class_name, section, selected_slots, selected_days, username, curriculum, school_year):
         try:
             with sqlite3.connect(schoolAddrDB) as conn:
-                cursor = conn.cursor()
+                c = conn.cursor()
 
                 if not class_name.strip():
-                    # st.error("Class name cannot be empty.")
+                    st.error("Class name cannot be empty.")
                     return False
 
                 class_name = class_name.lower()
 
                 # Check if the class already exists for the same curriculum and school year
-                cursor.execute("SELECT * FROM schedules WHERE class_name = ? AND section = ? AND curriculum = ? AND school_year = ?",
+                c.execute("SELECT * FROM schedules WHERE class_name = ? AND section = ? AND curriculum = ? AND school_year = ?",
                         (class_name, section, curriculum, school_year))
-                if cursor.fetchone():
-                    # st.error(f"Class '{class_name}' with section '{section}' already exists for {curriculum} ({school_year}).")
+                if c.fetchone():
+                    st.error(f"Class '{class_name}' with section '{section}' already exists for {curriculum} ({school_year}).")
                     return False
 
                 for time_slot in selected_slots:
@@ -70,12 +76,12 @@ class School:
                         start_time = datetime.strptime(start_time_str, "%I:%M %p")
                         end_time = datetime.strptime(end_time_str, "%I:%M %p")
                     except ValueError:
-                        # st.error("Invalid time slot selected.")
+                        st.error("Invalid time slot selected.")
                         return False
 
                     for day in selected_days:
                         if not self.is_time_slot_available(start_time, end_time, day, curriculum, school_year):
-                            # st.error(f"Time slot {time_slot} on {day} is already booked for {curriculum} ({school_year}). Please choose a different time.")
+                            st.error(f"Time slot {time_slot} on {day} is already booked for {curriculum} ({school_year}). Please choose a different time.")
                             return False
 
                 for time_slot in selected_slots:
@@ -83,38 +89,36 @@ class School:
                     start_time = datetime.strptime(start_time_str, "%I:%M %p")
                     end_time = datetime.strptime(end_time_str, "%I:%M %p")
                     for day in selected_days:
-                        cursor.execute("INSERT INTO schedules (class_name, section, start_time, end_time, days, username, curriculum, school_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        c.execute("INSERT INTO schedules (class_name, section, start_time, end_time, days, username, curriculum, school_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                                 (class_name, section, start_time.strftime("%Y-%m-%d %H:%M:%S"), end_time.strftime("%Y-%m-%d %H:%M:%S"), day, username, curriculum, school_year))
                 conn.commit()
-                # st.success(f"Class '{class_name}' (Section: {section}) scheduled successfully for {curriculum} ({school_year}).")
+                st.success(f"Class '{class_name}' (Section: {section}) scheduled successfully for {curriculum} ({school_year}).")
                 return True
         except sqlite3.Error as e:
-            print(f"Database error: {e}")
+            st.error(f"Database error: {e}")
             return False
 
     def is_time_slot_available(self, start_time, end_time, day, curriculum, school_year):
         try:
             with sqlite3.connect(schoolAddrDB) as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM schedules WHERE days = ? AND curriculum = ? AND school_year = ?", (day, curriculum, school_year))
-                for row in cursor.fetchall():
+                c = conn.cursor()
+                c.execute("SELECT * FROM schedules WHERE days = ? AND curriculum = ? AND school_year = ?", (day, curriculum, school_year))
+                for row in c.fetchall():
                     existing_start = datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S")
                     existing_end = datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
                     if (start_time < existing_end and end_time > existing_start):
-                        conn.close()
                         return False
                 return True
         except sqlite3.Error as e:
-            print(f"Database error: {e}")
+            st.error(f"Database error: {e}")
             return False
 
     def display_schedule(self, curriculum, school_year):
         try:
             with sqlite3.connect(schoolAddrDB) as conn:
-                cursor = conn.cursor()
-        
-                cursor.execute("SELECT class_name, section, start_time, end_time, days, username FROM schedules WHERE curriculum = ? AND school_year = ?", (curriculum, school_year))
-                schedules = cursor.fetchall()
+                c = conn.cursor()
+                c.execute("SELECT class_name, section, start_time, end_time, days, username FROM schedules WHERE curriculum = ? AND school_year = ?", (curriculum, school_year))
+                schedules = c.fetchall()
                 if not schedules:
                     st.info(f"No schedules to display for {curriculum} ({school_year}).")
                     return
@@ -135,24 +139,25 @@ class School:
                     }
                     days_to_display = day_mapping.get(day, [day])
                     for display_day in days_to_display:
-                        cursor.execute("SELECT color FROM users WHERE username = ?", (username,))
-                        user_color = cursor.fetchone()[0]
+                        c.execute("SELECT color FROM users WHERE username = ?", (username,))
+                        user_color = c.fetchone()[0]
                         display_text = f"<span style='color:{user_color}'>{class_name} (Section: {section})</span>"
                         df.loc[df["Time"] == time_slot_str, display_day] = display_text
 
                 st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)
         except sqlite3.Error as e:
-            print(f"Database error: {e}")
+            st.error(f"Database error: {e}")
             return False
 
     def edit_class(self, old_class_name, old_section, new_class_name, new_section, username, curriculum, school_year):
         try:
             with sqlite3.connect(schoolAddrDB) as conn:
-                cursor = conn.cursor()
+                c = conn.cursor()
+
                 # Check if the user is the Dean or the creator of the class
-                cursor.execute("SELECT username FROM schedules WHERE class_name = ? AND section = ? AND curriculum = ? AND school_year = ?",
+                c.execute("SELECT username FROM schedules WHERE class_name = ? AND section = ? AND curriculum = ? AND school_year = ?",
                         (old_class_name, old_section, curriculum, school_year))
-                result = cursor.fetchone()
+                result = c.fetchone()
                 if not result:
                     st.error(f"Class '{old_class_name}' (Section: {old_section}) not found for {curriculum} ({school_year}).")
                     return False
@@ -163,21 +168,21 @@ class School:
                     return False
 
                 # Update the class name and section
-                cursor.execute("UPDATE schedules SET class_name = ?, section = ? WHERE class_name = ? AND section = ? AND curriculum = ? AND school_year = ?",
+                c.execute("UPDATE schedules SET class_name = ?, section = ? WHERE class_name = ? AND section = ? AND curriculum = ? AND school_year = ?",
                         (new_class_name, new_section, old_class_name, old_section, curriculum, school_year))
-                conn.commit()
                 st.success(f"Class '{old_class_name}' (Section: {old_section}) updated to '{new_class_name}' (Section: {new_section}) for {curriculum} ({school_year}).")
                 return True
         except sqlite3.Error as e:
-            print(f"Database error: {e}")
+            st.error(f"Database error: {e}")
             return False
+
 
     def export_schedule_to_excel(self):
         try:
             with sqlite3.connect(schoolAddrDB) as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT class_name, start_time, end_time, days, username FROM schedules")
-                schedules = cursor.fetchall()
+                c = conn.cursor()
+                c.execute("SELECT class_name, start_time, end_time, days, username FROM schedules")
+                schedules = c.fetchall()
                 if not schedules:
                     st.info("No schedules to export.")
                     return
@@ -198,8 +203,8 @@ class School:
                     }
                     days_to_display = day_mapping.get(day, [day])
                     for display_day in days_to_display:
-                        cursor.execute("SELECT color FROM users WHERE username = ?", (username,))
-                        user_color = cursor.fetchone()[0]
+                        c.execute("SELECT color FROM users WHERE username = ?", (username,))
+                        user_color = c.fetchone()[0]
                         display_text = f"{class_name}"
                         df.loc[df["Time"] == time_slot_str, display_day] = display_text
 
@@ -220,41 +225,33 @@ class School:
                 )
                 st.success("Schedules exported successfully.")
         except Exception as e:
-            print(f"An error occurred while exporting schedules: {e}")
-            return False
+            st.error(f"An error occurred while exporting schedules: {e}")
 
     def list_classes(self, curriculum, school_year):
         """Fetch all classes for a specific curriculum and school year."""
         try:
             with sqlite3.connect(schoolAddrDB) as conn:
-                cursor = conn.cursor()
+                c = conn.cursor()
                 if st.session_state.role == "Dean":
-                    cursor.execute(
-                        '''
-                        SELECT DISTINCT class_name 
-                        FROM schedules 
-                        WHERE curriculum = :curriculum AND school_year = :school_year''', 
-                        {
-                            "curriculum": curriculum,
-                            "school_year": school_year
-                        }
-                    )
+                    c.execute("SELECT DISTINCT class_name FROM schedules WHERE curriculum = ? AND school_year = ?", (curriculum, school_year))
                 else:
-                    cursor.execute("SELECT DISTINCT class_name FROM schedules WHERE curriculum = ? AND school_year = ? AND username = ?", (curriculum, school_year, st.session_state.username))
-                return [class_name[0] for class_name in cursor.fetchall()]
+                    c.execute("SELECT DISTINCT class_name FROM schedules WHERE curriculum = ? AND school_year = ? AND username = ?", (curriculum, school_year, st.session_state.username))
+                classes = c.fetchall()
+                return [class_name[0] for class_name in classes]
         except sqlite3.Error as e:
-            print(f"Database error: {e}")
+            st.error(f"Database error: {e}")
             return []
 
     def delete_class(self, class_name, curriculum, school_year):
         """Delete a class for a specific curriculum and school year."""
         try:
             with sqlite3.connect(schoolAddrDB) as conn:
-                cursor = conn.cursor()
+                c = conn.cursor()
+
                 # Check if the user is the Dean or the creator of the class
-                cursor.execute("SELECT username FROM schedules WHERE class_name = ? AND curriculum = ? AND school_year = ?",
+                c.execute("SELECT username FROM schedules WHERE class_name = ? AND curriculum = ? AND school_year = ?",
                         (class_name, curriculum, school_year))
-                result = cursor.fetchone()
+                result = c.fetchone()
                 if not result:
                     st.error(f"Class '{class_name}' not found for {curriculum} ({school_year}).")
                     return False
@@ -266,11 +263,12 @@ class School:
 
                 # Delete the class
                 if st.session_state.role == "Dean":
-                    cursor.execute("DELETE FROM schedules WHERE class_name = ? AND curriculum = ? AND school_year = ?",
+                    c.execute("DELETE FROM schedules WHERE class_name = ? AND curriculum = ? AND school_year = ?",
                         (class_name, curriculum, school_year))
                 else:
-                    cursor.execute("DELETE FROM schedules WHERE class_name = ? AND curriculum = ? AND school_year = ? AND username = ?",
+                    c.execute("DELETE FROM schedules WHERE class_name = ? AND curriculum = ? AND school_year = ? AND username = ?",
                         (class_name, curriculum, school_year, st.session_state.username))
+                conn.commit()
                 st.success(f"Class '{class_name}' has been deleted from {curriculum} ({school_year}).")
                 return True
         except sqlite3.Error as e:
@@ -281,10 +279,22 @@ def get_curriculum_school_year_combinations():
     """Fetch all unique curriculum and school year combinations from the database."""
     try:
         with sqlite3.connect(schoolAddrDB) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT DISTINCT curriculum, school_year FROM schedules")
-            combinations = cursor.fetchall()
+            c = conn.cursor()
+            c.execute("SELECT DISTINCT curriculum, school_year FROM schedules")
+            combinations = c.fetchall()
             return combinations
     except sqlite3.Error as e:
             st.error(f"Database error: {e}")
             return None
+
+def fetch_current_class_details(class_to_edit, selected_curriculum, selected_school_year):
+    # Fetch the current details of the selected class
+    try:
+        with sqlite3.connect(schoolAddrDB) as conn:
+            c = conn.cursor()
+            c.execute("SELECT class_name, section FROM schedules WHERE class_name = ? AND curriculum = ? AND school_year = ? LIMIT 1",
+                        (class_to_edit, selected_curriculum, selected_school_year))
+            return c.fetchone()
+    except sqlite3.Error as e:
+        st.error(f"Database error: {e}")
+        return None
