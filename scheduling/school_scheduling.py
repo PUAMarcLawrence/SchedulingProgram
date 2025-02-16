@@ -1,6 +1,6 @@
-import streamlit as st
 
-from utils.scheduling_db_utils import initialize_db, School, get_curriculum_school_year_combinations
+import streamlit as st
+from utils.scheduling_db_utils import initialize_db, School, get_curriculum_school_year_combinations, fetch_current_class_details
 
 def main_program():
     school = School()
@@ -12,35 +12,34 @@ def main_program():
     # Fetch all curriculum and school year combinations
     curriculum_school_year_combinations = get_curriculum_school_year_combinations()
     
-    # Filter out None (None) combinations
-    curriculum_school_year_options = [
-        f"{row['curriculum']} ({row['school_year']})"
-        for row in curriculum_school_year_combinations
-        if row['curriculum'] is not None and row['school_year'] is not None
-    ]
+    # Extract unique curriculum and school year options
+    curriculum_options = list(set(row['curriculum'] for row in curriculum_school_year_combinations if row['curriculum'] is not None))
+    school_year_options = list(set(row['school_year'] for row in curriculum_school_year_combinations if row['school_year'] is not None))
 
     if menu_option == "Add Class":
         st.header("Add a Class")
-        class_name = st.text_input("Class Name")
-        section = st.text_input("Section")
+        class_name = st.text_input("Class Name", placeholder="Enter the class name (e.g., Mathematics)")
+        section = st.text_input("Section", placeholder="Enter the section (e.g., E01)")
 
-        # Add "Add New Curriculum and School Year" to the dropdown list
-        add_new_option = "Add New Curriculum and School Year"
-        dropdown_options = [add_new_option] + curriculum_school_year_options
-        # Dropdown for curriculum and school year
-        selected_curriculum_school_year = st.selectbox(
-            "Select Curriculum and School Year",
-            dropdown_options,
-            index=0,  # Set "Add New Curriculum and School Year" as the default option
-            disabled = curriculum_school_year_options == []
+        # Input for Curriculum
+        curriculum = st.selectbox(
+            "Select or Enter Curriculum",
+            options=curriculum_options + ["Add New Curriculum"],
+            index=0,  # Default to the first option
+            help="Select an existing curriculum or choose 'Add New Curriculum' to create a new one."
         )
+        if curriculum == "Add New Curriculum":
+            curriculum = st.text_input("Enter New Curriculum", placeholder="Enter the new curriculum name (e.g., COE)")
 
-        if selected_curriculum_school_year == add_new_option:
-            curriculum = st.text_input("Enter Curriculum")
-            school_year = st.text_input("Enter School Year")
-        else:
-            curriculum, school_year = selected_curriculum_school_year.split(" (")
-            school_year = school_year[:-1]  # Remove the closing parenthesis
+        # Input for School Year
+        school_year = st.selectbox(
+            "Select or Enter School Year",
+            options=school_year_options + ["Add New School Year"],
+            index=0,  # Default to the first option
+            help="Select an existing school year or choose 'Add New School Year' to create a new one."
+        )
+        if school_year == "Add New School Year":
+            school_year = st.text_input("Enter New School Year", placeholder="Enter the new school year (e.g., 2025)")
 
         st.write("Select the desired time slots by clicking on the schedule below:")
         if curriculum and school_year:
@@ -69,52 +68,64 @@ def main_program():
 
     elif menu_option == "Show Schedule":
         st.header("Class Schedule")
-        if curriculum_school_year_options:
-            selected_curriculum_school_year = st.selectbox(
-                "Select Curriculum and School Year",
-                curriculum_school_year_options
+        if curriculum_options and school_year_options:
+            selected_curriculum = st.selectbox(
+                "Select Curriculum",
+                options=curriculum_options,
+                index=0
             )
-            curriculum, school_year = selected_curriculum_school_year.split(" (")
-            school_year = school_year[:-1]  # Remove the closing parenthesis
-            school.display_schedule(curriculum, school_year)
+            selected_school_year = st.selectbox(
+                "Select School Year",
+                options=school_year_options,
+                index=0
+            )
+            school.display_schedule(selected_curriculum, selected_school_year)
         else:
             st.warning("No curriculum and school year combinations found. Please add a class first.")
 
     elif menu_option == "Export Schedule to Excel":
         st.header("Export Schedule to Excel")
-        if curriculum_school_year_options:
-            selected_curriculum_school_year = st.selectbox(
-                "Select Curriculum and School Year",
-                curriculum_school_year_options
+        if curriculum_options and school_year_options:
+            selected_curriculum = st.selectbox(
+                "Select Curriculum",
+                options=curriculum_options,
+                index=0
             )
-            curriculum, school_year = selected_curriculum_school_year.split(" (")
-            school_year = school_year[:-1]  # Remove the closing parenthesis
-            school.export_schedule_to_excel(curriculum, school_year)
+            selected_school_year = st.selectbox(
+                "Select School Year",
+                options=school_year_options,
+                index=0
+            )
+            school.export_schedule_to_excel(selected_curriculum, selected_school_year)
         else:
             st.warning("No curriculum and school year combinations found. Please add a class first.")
 
     elif menu_option == "Delete Class":
         st.header("Delete a Class")
-        if curriculum_school_year_options:
-            selected_curriculum_school_year = st.selectbox(
-                "Select Curriculum and School Year",
-                curriculum_school_year_options
+        if curriculum_options and school_year_options:
+            selected_curriculum = st.selectbox(
+                "Select Curriculum",
+                options=curriculum_options,
+                index=0
             )
-            curriculum, school_year = selected_curriculum_school_year.split(" (")
-            school_year = school_year[:-1]  # Remove the closing parenthesis
+            selected_school_year = st.selectbox(
+                "Select School Year",
+                options=school_year_options,
+                index=0
+            )
 
             if st.button("Start Deleting Classes"):
                 st.session_state.delete_mode = True
 
             if st.session_state.delete_mode:
-                classes = school.list_classes(curriculum, school_year)  # Pass curriculum and school year
+                classes = school.list_classes(selected_curriculum, selected_school_year)
                 if classes:
                     delete_class_name = st.selectbox("Select Class to Delete", classes)
                     if st.button("Confirm Delete"):
-                        school.delete_class(delete_class_name, curriculum, school_year)  # Pass curriculum and school year
+                        school.delete_class(delete_class_name, selected_curriculum, selected_school_year)
                         st.session_state.delete_mode = False
                         st.experimental_set_query_params(refresh=True)
-                        st.success(f"Class '{delete_class_name}' has been deleted from {curriculum} ({school_year}).")
+                        st.success(f"Class '{delete_class_name}' has been deleted from {selected_curriculum} ({selected_school_year}).")
                 else:
                     st.info("No classes available to delete.")
         else:
@@ -122,26 +133,36 @@ def main_program():
 
     elif menu_option == "Edit Class":
         st.header("Edit a Class")
-        if curriculum_school_year_options:
-            selected_curriculum_school_year = st.selectbox(
-                "Select Curriculum and School Year",
-                curriculum_school_year_options
+        if curriculum_options and school_year_options:
+            selected_curriculum = st.selectbox(
+                "Select Curriculum",
+                options=curriculum_options,
+                index=0
             )
-            curriculum, school_year = selected_curriculum_school_year.split(" (")
-            school_year = school_year[:-1]  # Remove the closing parenthesis
+            selected_school_year = st.selectbox(
+                "Select School Year",
+                options=school_year_options,
+                index=0
+            )
 
-            classes = school.list_classes(curriculum, school_year)
+            classes = school.list_classes(selected_curriculum, selected_school_year)
             if classes:
                 class_to_edit = st.selectbox("Select Class to Edit", classes)
-                section_to_edit = st.text_input("Enter Section to Edit")
-                new_class_name = st.text_input("New Class Name")
-                new_section = st.text_input("New Section")
+                current_class_details = fetch_current_class_details(class_to_edit, selected_curriculum, selected_school_year)
+                if current_class_details:
+                    current_class_name, current_section = current_class_details
 
-                if st.button("Edit Class"):
-                    if school.edit_class(class_to_edit, section_to_edit, new_class_name, new_section, st.session_state.username, curriculum, school_year):
-                        st.success(f"Class '{class_to_edit}' (Section: {section_to_edit}) updated to '{new_class_name}' (Section: {new_section}) for {curriculum} ({school_year}).")
-                    else:
-                        st.error("Failed to edit class. Please check your inputs and permissions.")
+                    # Pre-fill the current class details
+                    new_class_name = st.text_input("New Class Name", value=current_class_name)
+                    new_section = st.text_input("New Section", value=current_section)
+
+                    if st.button("Edit Class"):
+                        if school.edit_class(current_class_name, current_section, new_class_name, new_section, st.session_state.username, selected_curriculum, selected_school_year):
+                            st.success(f"Class '{current_class_name}' (Section: {current_section}) updated to '{new_class_name}' (Section: {new_section}) for {selected_curriculum} ({selected_school_year}).")
+                        else:
+                            st.error("Failed to edit class. Please check your inputs and permissions.")
+                else:
+                    st.error("Failed to fetch class details. Please try again.")
             else:
                 st.info("No classes available to edit.")
         else:
