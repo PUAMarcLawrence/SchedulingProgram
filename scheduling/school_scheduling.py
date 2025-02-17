@@ -4,7 +4,6 @@ import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
 import io
-from utils.db_utils import hash_password
 
 # Ensure the 'data' directory exists
 if not os.path.exists('data'):
@@ -49,10 +48,6 @@ def initialize_db():
 
     conn.commit()
     conn.close()
-
-initialize_db()
-
-
 
 initialize_db()
 
