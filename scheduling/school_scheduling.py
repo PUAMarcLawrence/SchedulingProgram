@@ -3,8 +3,8 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
-import bcrypt
 import io
+from utils.db_utils import hash_password
 
 # Ensure the 'data' directory exists
 if not os.path.exists('data'):
