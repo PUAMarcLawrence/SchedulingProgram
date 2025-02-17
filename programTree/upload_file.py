@@ -49,7 +49,7 @@ if uploaded_file is not None:
         program = get_program(program)
     try:
         data = pd.read_excel(uploaded_file)
-        st.write("Preview of Excel data:")
+        st.write("Editable preview of Excel data:")
         Edited_data = st.data_editor(
             data,
             use_container_width=True,
