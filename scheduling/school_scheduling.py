@@ -291,9 +291,6 @@ class School:
         finally:
             conn.close()
 
-def hash_password(password):
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
 # def register():
 #     conn = get_db_connection()
 #     c = conn.cursor()
