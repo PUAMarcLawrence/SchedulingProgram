@@ -2,9 +2,7 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import io
-from utils.db_utils import hash_password
 from datetime import datetime, timedelta
-
 
 schoolAddrDB = './data/school.db'
 
