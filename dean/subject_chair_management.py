@@ -15,7 +15,7 @@ st.title("Subject Chair List")
 text_box,button,modify = st.columns([3,0.3,0.6])
 text_box.text_input(
     "Add new Program:", 
-    help="Enter a Program Code Example(ECE,CPE,EE etc)",
+    help="Enter a Program Code of the Program Chairs (ECE,CPE,EE etc)",
     value=None,
     key="new_program",
     label_visibility="visible",)

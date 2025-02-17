@@ -22,7 +22,7 @@ def initialize_db():
                     days TEXT,
                     username TEXT,
                     curriculum TEXT,
-                    school_year TEXT)''')
+                    school_year INTAGER)''')
             cursor = conn.cursor()
             # If the table already exists, add the curriculum and school_year columns to schedules
             cursor.execute("PRAGMA table_info(schedules)")

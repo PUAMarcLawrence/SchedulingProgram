@@ -29,8 +29,8 @@ settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
 
 #============================ Admin Pages ==============================
 manage_users = st.Page(
-    "admin/manage_users.py", 
-    title="Manage Users", 
+    "admin/manage_database.py", 
+    title="Manage Database", 
     icon=":material/people:", 
     default=(role == "Admin"),)
 
@@ -40,13 +40,6 @@ subject_chair_management = st.Page(
     title="Subject Chair Management",
     icon=":material/people:",)
     # default=(role == "Dean"),)
-
-# ============================ Scheduling Pages ========================
-school_scheduling = st.Page(
-    "scheduling/school_scheduling.py",
-    title="School Scheduling",
-    icon=":material/computer:",
-    default=(role == "Subject Chair" or role == "Dean"),)
 
 # ============================ Program Tree Pages =======================
 quickView = st.Page(
@@ -65,12 +58,27 @@ upload_curiculum = st.Page(
     title="Upload Curiculum",
     icon=":material/upload:")
 
+# ============================ Scheduling Pages ========================
+school_scheduling = st.Page(
+    "scheduling/school_scheduling.py",
+    title="School Scheduling",
+    icon=":material/computer:",
+    default=(role == "Subject Chair" or role == "Dean"),)
+
+# scheduling_subjects = st.Page(
+#     "scheduling/scheduling_subjects.py",
+#     title="School Sched",
+#     icon=":material/computer:",
+# )
+
+
 # ============================ Page Dictionary ==========================
 account_pages = [logout_page, settings]
 dean_pages = [subject_chair_management]
 admin_pages = [manage_users]
-scheduling_pages = [school_scheduling]
-programTree_pages = [quickView, sandbox_programTree, upload_curiculum]
+programTree_pages = [upload_curiculum, quickView, sandbox_programTree]
+scheduling_pages = [school_scheduling]#,scheduling_subjects]
+
 
 # ========================== Main Program ===============================
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
@@ -81,9 +89,10 @@ if st.session_state.role in ["Admin"]:
 if st.session_state.role in ["Dean"]:
     page_dict["Subject Chair"] = dean_pages
 if st.session_state.role in ["Subject Chair","Dean"]:
-    page_dict["Scheduling"] = scheduling_pages
-if st.session_state.role in ["Subject Chair","Dean"]:
     page_dict["Program Tree"] = programTree_pages
+if st.session_state.role in ["Subject Chair","Dean"]:
+    page_dict["Scheduling"] = scheduling_pages
+
 
 if st.session_state['loggedIn'] and len(page_dict) > 0 :
     pg = st.navigation({"Account": account_pages} | page_dict)
