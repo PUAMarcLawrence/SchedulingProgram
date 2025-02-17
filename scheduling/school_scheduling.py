@@ -51,7 +51,7 @@ def initialize_db():
     conn.close()
 
 initialize_db()
-=======
+
  def initialize_db():
      conn = get_db_connection()
      c = conn.cursor()
