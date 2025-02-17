@@ -10,6 +10,8 @@ if 'loggedIn' not in st.session_state:
     st.session_state['loggedIn'] = False
 if 'pageLogin' not in st.session_state:
     st.session_state['pageLogin'] = True
+if 'delete_mode' not in st.session_state:
+    st.session_state['delete_mode'] = False
 
 # Roles declaration
 ROLES = [None,"Admin", "Subject Chair", "Dean"]
