@@ -4,7 +4,6 @@ import pandas as pd
 import sqlite3
 from datetime import datetime, timedelta
 import io
-from utils.db_utils import hash_password
 
 # Ensure the 'data' directory exists
 if not os.path.exists('data'):
@@ -51,39 +50,6 @@ def initialize_db():
     conn.close()
 
 initialize_db()
-=======
- def initialize_db():
-     conn = get_db_connection()
-     c = conn.cursor()
-
-     c.execute('''CREATE TABLE IF NOT EXISTS users (
-                     username TEXT PRIMARY KEY,
-                     password TEXT,
-                     role TEXT,
-                     color TEXT)''')
-
-     c.execute('''CREATE TABLE IF NOT EXISTS schedules (
-                     class_name TEXT,
-                     section TEXT,
-                     start_time TEXT,
-                     end_time TEXT,
-                     days TEXT,
-                     username TEXT,
-                     curriculum TEXT,
-                     school_year TEXT)''')
-
-     # If the table already exists, add the curriculum and school_year columns to schedules
-     c.execute("PRAGMA table_info(schedules)")
-     columns = [column[1] for column in c.fetchall()]
-     if 'curriculum' not in columns:
-         c.execute("ALTER TABLE schedules ADD COLUMN curriculum TEXT")
-     if 'school_year' not in columns:
-         c.execute("ALTER TABLE schedules ADD COLUMN school_year TEXT")
-
-     conn.commit()
-     conn.close()
-
- initialize_db()
 
 class School:
     def __init__(self):
