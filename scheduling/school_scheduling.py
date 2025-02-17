@@ -19,38 +19,38 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# def initialize_db():
-#     conn = get_db_connection()
-#     c = conn.cursor()
+def initialize_db():
+    conn = get_db_connection()
+    c = conn.cursor()
 
-#     c.execute('''CREATE TABLE IF NOT EXISTS users (
-#                     username TEXT PRIMARY KEY,
-#                     password TEXT,
-#                     role TEXT,
-#                     color TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+                    username TEXT PRIMARY KEY,
+                    password TEXT,
+                    role TEXT,
+                    color TEXT)''')
 
-#     c.execute('''CREATE TABLE IF NOT EXISTS schedules (
-#                     class_name TEXT,
-#                     section TEXT,
-#                     start_time TEXT,
-#                     end_time TEXT,
-#                     days TEXT,
-#                     username TEXT,
-#                     curriculum TEXT,
-#                     school_year TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS schedules (
+                    class_name TEXT,
+                    section TEXT,
+                    start_time TEXT,
+                    end_time TEXT,
+                    days TEXT,
+                    username TEXT,
+                    curriculum TEXT,
+                    school_year TEXT)''')
 
-#     # If the table already exists, add the curriculum and school_year columns to schedules
-#     c.execute("PRAGMA table_info(schedules)")
-#     columns = [column[1] for column in c.fetchall()]
-#     if 'curriculum' not in columns:
-#         c.execute("ALTER TABLE schedules ADD COLUMN curriculum TEXT")
-#     if 'school_year' not in columns:
-#         c.execute("ALTER TABLE schedules ADD COLUMN school_year TEXT")
+    # If the table already exists, add the curriculum and school_year columns to schedules
+    c.execute("PRAGMA table_info(schedules)")
+    columns = [column[1] for column in c.fetchall()]
+    if 'curriculum' not in columns:
+        c.execute("ALTER TABLE schedules ADD COLUMN curriculum TEXT")
+    if 'school_year' not in columns:
+        c.execute("ALTER TABLE schedules ADD COLUMN school_year TEXT")
 
-#     conn.commit()
-#     conn.close()
+    conn.commit()
+    conn.close()
 
-# initialize_db()
+initialize_db()
 
 class School:
     def __init__(self):
