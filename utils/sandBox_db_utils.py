@@ -45,6 +45,29 @@ def copy_table(department,program, userID, source_table_name, new_table_name):
         print(f"Database connection error: {e}")
         return False
 
+def create_scratch_sandbox(userID,new_table_name):
+    sand_db = f'./data/sandBox/{userID}_sandBox.db'
+    try:
+        with sqlite3.connect(sand_db) as conn:
+            conn.execute(
+                f"""
+                CREATE TABLE IF NOT EXISTS {new_table_name}(
+                Year INTEGER,
+                Term INTEGER,
+                Code TEXT,
+                Title TEXT,
+                [Lec Hrs] INTEGER,
+                [Lab Hrs] INTEGER,
+                [Credit Units] INTEGER,
+                Prerequisite TEXT,
+                Co_requisite TEXT,
+                [Care Taker] TEXT)
+                
+                """)
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return False
+
 def get_sand_names(userID):
     sand_db = f'./data/sandBox/{userID}_sandBox.db'
     try:
