@@ -77,7 +77,7 @@ account_pages = [logout_page, settings]
 dean_pages = [subject_chair_management]
 admin_pages = [manage_users]
 programTree_pages = [upload_curiculum, quickView, sandbox_programTree]
-scheduling_pages = [school_scheduling]#,scheduling_subjects]
+scheduling_pages = [school_scheduling,]# scheduling_subjects]
 
 
 # ========================== Main Program ===============================

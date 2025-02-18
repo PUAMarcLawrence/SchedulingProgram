@@ -60,7 +60,7 @@ if uploaded_file is not None:
         st.error(f"Error reading Excel file: {e}")
     st.warning("Please make sure that you double check the data before uploading.", icon="⚠️")
     if st.button("Upload Curiculum"):
-        if program_name and selected_year:
+        if program_name and selected_year and program:
             if upload_to_database(Edited_data,st.session_state['department_ID'],program,program_name,str(selected_year)):
                 st.success("Uploaded")
             else:
