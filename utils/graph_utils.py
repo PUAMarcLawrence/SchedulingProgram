@@ -92,7 +92,7 @@ def build_interactive_subject_graph(subjects):
     for semester_subjects in subjects.values():
         subjects_only.update(semester_subjects)
 
-    phrases=["2nd year standing","3rd year standing","4th year standing"]
+    phrases="year standing"
     
     for node in net.nodes:
         node["value"] = len(neighbor_map[node["id"]])
@@ -100,7 +100,7 @@ def build_interactive_subject_graph(subjects):
         node["labelHighlightBold"] = "true"
         for prerequisite in subjects_only[node['id']]['prerequisites']:
             for phrase in phrases:
-                if phrase.lower() == prerequisite.lower():
+                if phrase.lower() in prerequisite.lower():
                     node["shape"] = "star"
                     node["value"] = 10
     return net

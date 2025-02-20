@@ -61,6 +61,7 @@ if open_sandBox:
             main,save,settings = st.columns([4.5,0.5,0.3])
             subjects = load_from_sand_db(st.session_state['ID'],open_sandBox[i])
             if subjects:
+                st.info('In entering year standings as a pre-requisite use the entire spelling with spaces ex.(2nd year standing)', icon="ℹ️")
                 Edited_data[i] = st.data_editor(
                     subjects,
                     column_config={
@@ -105,7 +106,7 @@ if open_sandBox:
                             width='small'
                         ),
                     },
-                    # height=len(subjects) * 35 + 70,
+                    height=len(subjects) * 35 + (70*110),
                     num_rows='dynamic',
                     use_container_width=True,
                     key=f"Editor_{open_sandBox[i]}"
