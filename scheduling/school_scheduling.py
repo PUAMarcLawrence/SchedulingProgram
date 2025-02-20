@@ -314,13 +314,13 @@ def main_program():
                 curriculum = st.text_input("Enter New Curriculum", placeholder="Enter the new curriculum name (e.g., COE)")
             # Input for School Year
             school_year = st.selectbox(
-                "Select or Enter School Year",
-                options=school_year_options + ["Add New School Year"],
+                "Select or Enter Batch",
+                options=school_year_options + ["Add New Batch"],
                 index=0, # Default to the first option
-                help="Select an existing school year or choose 'Add New School Year' to create a new one."
+                help="Select an existing batch or choose 'Add New Batch' to create a new one."
             )
-            if school_year == "Add New School Year":
-                school_year = st.text_input("Enter New School Year", placeholder="Enter the new school year (e.g., 2025)")
+            if school_year == "Add New Batch":
+                school_year = st.text_input("Enter New Batch", placeholder="Enter the new batch (e.g., 2025)")
             # Input for Term
             term = st.selectbox(
                 "Select Term",
@@ -341,7 +341,7 @@ def main_program():
                 elif not curriculum:
                     st.error("Curriculum cannot be empty.")
                 elif not school_year:
-                    st.error("School year cannot be empty.")
+                    st.error("Batch cannot be empty.")
                 elif not selected_slots:
                     st.error("Please select at least one time slot.")
                 elif not selected_days:
@@ -361,7 +361,7 @@ def main_program():
                     index=0
                 )
                 selected_school_year = st.selectbox(
-                    "Select School Year",
+                    "Select Batch",
                     options=school_year_options,
                     index=0
                 )
@@ -372,7 +372,7 @@ def main_program():
                 )
                 school.display_schedule(selected_curriculum, selected_school_year, selected_term)
             else:
-                st.warning("No curriculum and school year combinations found. Please add a class first.")
+                st.warning("No curriculum and Batch combinations found. Please add a class first.")
         
         elif menu_option == "Export Schedule to Excel":
             st.header("Export Schedule to Excel")
@@ -383,7 +383,7 @@ def main_program():
                     index=0
                 )
                 selected_school_year = st.selectbox(
-                    "Select School Year",
+                    "Select Batch",
                     options=school_year_options,
                     index=0
                 )
@@ -394,7 +394,7 @@ def main_program():
                 )
                 school.export_schedule_to_excel(selected_curriculum, selected_school_year, selected_term)
             else:
-                st.warning("No curriculum and school year combinations found. Please add a class first.")
+                st.warning("No curriculum and batch combinations found. Please add a class first.")
         
         elif menu_option == "Delete Class":
             st.header("Delete a Class")
@@ -405,7 +405,7 @@ def main_program():
                     index=0
                 )
                 selected_school_year = st.selectbox(
-                    "Select School Year",
+                    "Select Batch",
                     options=school_year_options,
                     index=0
                 )
@@ -428,7 +428,7 @@ def main_program():
                     else:
                         st.info("No classes available to delete.")
             else:
-                st.warning("No curriculum and school year combinations found. Please add a class first.")
+                st.warning("No curriculum and batch combinations found. Please add a class first.")
         
         elif menu_option == "Edit Class":
             st.header("Edit a Class")
