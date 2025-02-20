@@ -42,12 +42,11 @@ def build_interactive_subject_graph(subjects):
     for semester, semester_subjects in subjects.items():
         for subject in semester_subjects.keys():
             all_subjects.add(subject)
-    
     level_map = 1
     for (year,semester), semester_subjects in subjects.items():
         for subject in semester_subjects.keys():
             f_title = f"""Year {year} - Semester {semester}
-                            {subject}\n"""
+                            {subject}\n {semester_subjects[subject]['title']}\n"""
             if semester_subjects[subject]['prerequisites'] != []:
                 p_req = ", ".join(semester_subjects[subject]['prerequisites'])
                 f_title += f"Pre-Req: {p_req}\n"

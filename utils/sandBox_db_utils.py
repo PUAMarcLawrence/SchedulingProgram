@@ -1,5 +1,5 @@
 import sqlite3
-
+import pandas as pd
 
 def copy_table(department,program, userID, source_table_name, new_table_name):
     source_db = f'./data/curriculum/{department}/{program}_curriculum.db'
@@ -96,25 +96,26 @@ def format_data_to_Graph(data):
     subjects_dict = {}
     for row in data:
         year,term,subject_code,title,lec_hrs,lab_hrs,credit_units,prerequisites,corequisites,care_taker = row
-        prerequisites = prerequisites.split(',') if prerequisites else []
-        corequisites = corequisites.split(',') if corequisites else []
-        if year != None:
-            year = int(year)
-        if term != None:
-            term = int(term)
-        semester_key = (year, term)
-        if semester_key not in subjects_dict:
-            subjects_dict[semester_key] = {}
+        if pd.isna(year) != True and pd.isna(term) != True and pd.isna(subject_code) != True:
+            prerequisites = prerequisites.split(',') if prerequisites else []
+            corequisites = corequisites.split(',') if corequisites else []
+            if year != None or year:
+                year = int(year)
+            if term != None:
+                term = int(term)
+            semester_key = (year, term)
+            if semester_key not in subjects_dict:
+                subjects_dict[semester_key] = {}
 
-        subjects_dict[semester_key][subject_code] = {
-            "title": title,
-            "lec_hrs":lec_hrs,
-            "lab_hrs":lab_hrs,
-            "prerequisites": [prereq.strip() for prereq in prerequisites],
-            "corequisites": [coreq.strip() for coreq in corequisites],
-            "credit_unit": credit_units,
-            "care_taker": care_taker
-        }
+            subjects_dict[semester_key][subject_code] = {
+                "title": title,
+                "lec_hrs":lec_hrs,
+                "lab_hrs":lab_hrs,
+                "prerequisites": [prereq.strip() for prereq in prerequisites],
+                "corequisites": [coreq.strip() for coreq in corequisites],
+                "credit_unit": credit_units,
+                "care_taker": care_taker
+            }
     return subjects_dict
 
 def save_data_to_sand_db(data,userID,sandBox_name):
