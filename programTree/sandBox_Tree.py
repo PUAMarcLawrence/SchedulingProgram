@@ -122,5 +122,5 @@ if open_sandBox:
                 )
             with settings.popover("",icon="🔧"):
                 st.write("Settings")
-                option = st.selectbox("Options",("Delete","Rename"),label_visibility='hidden',key=f"SettingBox_{open_sandBox[i]}")
+                option = st.selectbox("Options",("Delete","Rename"),label_visibility='collapsed',key=f"SettingBox_{open_sandBox[i]}")
             
