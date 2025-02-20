@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db
+from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db, create_scratch_sandbox
 from utils.db_utils import get_department_programs,get_program,get_department
 from utils.quickView_db_utils import get_table_names
 from utils.graph_utils import build_interactive_subject_graph
@@ -29,13 +29,18 @@ with createtabs.popover("Create Sandbox"):
                     st.error("Rquires a curriculum to copy from.")
                 else:
                     if copy_table(department,program,st.session_state['ID'],select_table,sand_name):
-                        st.success("Table copied successfully")
+                        st.success("Curriculum copied successfully")
                         time.sleep(2)
                         st.rerun()
                     else:
                         st.error("Sandbox name in use.")
         case "From Scratch":
             sand_name = st.text_input("Enter the sandbox name:",  )
+            if st.button("Create Sandbox"):
+                if create_scratch_sandbox(st.session_state['ID'],sand_name):
+                    st.success("sandbox creation Successfully")
+                else:
+                    st.error("Sandbox creation failed")
         
 open_sandBox = opentabs.multiselect(
     "SandBoxes",
@@ -43,6 +48,7 @@ open_sandBox = opentabs.multiselect(
     placeholder="Select sandboxes to open",
     help="You can select multiple sandboxes to open"
 )
+Edited_data = {}
 if open_sandBox:
     tabs = st.tabs(open_sandBox)
     for i, tab in enumerate(tabs):
@@ -50,7 +56,7 @@ if open_sandBox:
             main,save,settings = st.columns([4.5,0.5,0.3])
             subjects = load_from_sand_db(st.session_state['ID'],open_sandBox[i])
             if subjects:
-                Edited_data = st.data_editor(
+                Edited_data[i] = st.data_editor(
                     subjects,
                     column_config={
                         "0":st.column_config.NumberColumn(
@@ -96,19 +102,20 @@ if open_sandBox:
                     },
                     height=len(subjects) * 35 + 70,
                     num_rows='dynamic',
-                    use_container_width=True
+                    use_container_width=True,
+                    key=f"Editor_{open_sandBox[i]}"
                     )
-                if save.button("Save"):
-                    if save_data_to_sand_db(Edited_data,st.session_state['ID'],open_sandBox[i]):
+                if save.button("Save",key=f"Button_{open_sandBox[i]}"):
+                    if save_data_to_sand_db(Edited_data[i],st.session_state['ID'],open_sandBox[i]):
                         st.success("Saved")
                     else:
                         st.error("Error occured sandBox not saved")
-                converted_data = format_data_to_Graph(Edited_data)
+                converted_data = format_data_to_Graph(Edited_data[i])
                 st.components.v1.html(
                     build_interactive_subject_graph(converted_data).generate_html(),
                     height=800
                 )
             with settings.popover("",icon="🔧"):
                 st.write("Settings")
-                option = st.selectbox
+                option = st.selectbox("Options",("Delete","Rename"),label_visibility='hidden',key=f"SettingBox_{open_sandBox[i]}")
             
