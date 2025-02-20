@@ -55,6 +55,7 @@ if uploaded_file is not None:
         Edited_data = st.data_editor(
             data,
             use_container_width=True,
+            height=len(data) * 35 + 70,
             num_rows='dynamic'
         )
     except Exception as e:
