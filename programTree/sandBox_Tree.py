@@ -25,8 +25,10 @@ with createtabs.popover("Create Sandbox"):
             select_table = st.selectbox('Select a curriculum:',tables)
             sand_name = st.text_input("Enter the sandbox name:",  )
             if st.button("Create Sandbox"):
-                if select_table == "":
-                    st.error("Rquires a curriculum to copy from.")
+                if select_table == None:
+                    st.error("Requires a curriculum to copy from.")
+                elif sand_name == None:
+                    st.error("Requires a name for the sandBox")
                 else:
                     if copy_table(department,program,st.session_state['ID'],select_table,sand_name):
                         st.success("Curriculum copied successfully")
@@ -37,10 +39,13 @@ with createtabs.popover("Create Sandbox"):
         case "From Scratch":
             sand_name = st.text_input("Enter the sandbox name:",  )
             if st.button("Create Sandbox"):
-                if create_scratch_sandbox(st.session_state['ID'],sand_name):
-                    st.success("sandbox creation Successfully")
+                if sand_name == "":
+                    st.error("Requires a name for the sandBox")
                 else:
-                    st.error("Sandbox creation failed")
+                    if create_scratch_sandbox(st.session_state['ID'],sand_name):
+                        st.success("sandbox creation Successfully")
+                    else:
+                        st.error("Sandbox creation failed")
         
 open_sandBox = opentabs.multiselect(
     "SandBoxes",
@@ -100,7 +105,7 @@ if open_sandBox:
                             width='small'
                         ),
                     },
-                    height=len(subjects) * 35 + 70,
+                    # height=len(subjects) * 35 + 70,
                     num_rows='dynamic',
                     use_container_width=True,
                     key=f"Editor_{open_sandBox[i]}"

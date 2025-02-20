@@ -69,23 +69,26 @@ def login():
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
-        login_result = check_login(username, password)
-        if login_result:
-            st.session_state.update({
-                'loggedIn': True,
-                'ID': login_result[0],
-                'username': login_result[1],
-                'department_ID':login_result[4],
-                'role': login_result[3],
-                'program_ID': login_result[5],
-                'color': login_result[6],
-                'delete_mode': False
-            })
-            st.success("Logged in successfully!")
-            time.sleep(1.5)
-            st.rerun()
+        if username and password:
+            login_result = check_login(username, password)
+            if login_result:
+                st.session_state.update({
+                    'loggedIn': True,
+                    'ID': login_result[0],
+                    'username': login_result[1],
+                    'department_ID':login_result[4],
+                    'role': login_result[3],
+                    'program_ID': login_result[5],
+                    'color': login_result[6],
+                    'delete_mode': False
+                })
+                st.success("Logged in successfully!")
+                time.sleep(1.5)
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
         else:
-            st.error("Invalid username or password")
+            st.error("All fields are required to be filled")
     if st.button("Register New User"):
         st.session_state['pageLogin'] = False
         st.rerun()

@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 from utils.db_utils import get_department, initialize_department_dir
 
-def upload_to_database(data,department_ID,program,program_name,year):
+def upload_to_database(data,department_ID,program,program_batch):
     try:
         department = get_department(department_ID)
         initialize_department_dir(department)
@@ -11,7 +11,7 @@ def upload_to_database(data,department_ID,program,program_name,year):
             cursor = conn.cursor()
             columns = data.columns
             column_definitions = ", ".join([f"{col} TEXT" for col in columns])
-            table_name = f"{program_name.upper()}_{year}"
+            table_name = program_batch
             cursor.execute(
                 f'''
                 CREATE TABLE IF NOT EXISTS {table_name} ({column_definitions})
@@ -25,4 +25,16 @@ def upload_to_database(data,department_ID,program,program_name,year):
             return False
     except sqlite3.Error as e:
         print(f"Error uploading data to SQLite: {e}")
+        return False
+    
+def get_existing_curriculum(department_ID,program,program_batch):
+    department = get_department(department_ID)
+    curriculum = f'./data/curriculum/{department}/{program}_curriculum.db'
+    try:
+        with sqlite3.connect(curriculum) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?;", (program_batch,))
+            return cursor.fetchone()
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
         return False
