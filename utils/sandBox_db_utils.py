@@ -1,5 +1,6 @@
 import sqlite3
 import pandas as pd
+pd.set_option('future.no_silent_downcasting', True)
 
 def copy_table(department,program, userID, source_table_name, new_table_name):
     source_db = f'./data/curriculum/{department}/{program}_curriculum.db'
@@ -62,8 +63,25 @@ def create_scratch_sandbox(userID,new_table_name):
                 Prerequisite TEXT,
                 Co_requisite TEXT,
                 [Care Taker] TEXT)
-                
                 """)
+            conn.execute(
+                f"""
+                INSERT INTO {new_table_name}(Year,Term,Code,Title,[Lec Hrs],[Lab Hrs],[Credit Units],Prerequisite,Co_requisite,[Care Taker])
+                VALUES (:Year,:Term,:Code,:Title,:lec_hrs,:lab_hrs,:credit_units,:prereque,:coreque,:care_taker)""",
+                {
+                    'Year': 1,
+                    'Term': 1,
+                    'Code': 'MATH165',
+                    'Title': 'COLLEGE ALGEBRA WITH ANALYTIC GEOMETRY',
+                    'lec_hrs': 3.7,
+                    'lab_hrs': None,
+                    'credit_units': 3,
+                    'prereque': None,
+                    'coreque': None,
+                    'care_taker':'MATH'
+                }
+                )
+            return True
     except sqlite3.Error as e:
         print(f"Database connection error: {e}")
         return False
