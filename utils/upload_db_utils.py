@@ -36,5 +36,4 @@ def get_existing_curriculum(department_ID,program,program_batch):
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?;", (program_batch,))
             return cursor.fetchone()
     except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
-        return False
+        return None
