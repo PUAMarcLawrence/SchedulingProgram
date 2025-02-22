@@ -2,7 +2,7 @@ import sqlite3
 import hashlib
 import os
 
-db_path = './data'
+db_path = '../data'
 path_sandBox = db_path +'/sandBox'
 path_curriculum = db_path +'/curriculum'
 schoolAddrDB = db_path +'/school.db'
@@ -54,8 +54,8 @@ def initialize_db():
         print(f"Database connection error: {e}")
 
 def initialize_department_dir(department):
-    if not os.path.exists(f'./data/curriculum/{department}'):
-        os.mkdir(f'./data/curriculum/{department}')
+    if not os.path.exists(f'{path_curriculum}/{department}'):
+        os.mkdir(f'{path_curriculum}/{department}')
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()

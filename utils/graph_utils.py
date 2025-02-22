@@ -99,8 +99,7 @@ def build_interactive_subject_graph(subjects):
         node["color"] = color_map[node["value"]]
         node["labelHighlightBold"] = "true"
         for prerequisite in subjects_only[node['id']]['prerequisites']:
-            for phrase in phrases:
-                if phrase.lower() in prerequisite.lower():
-                    node["shape"] = "star"
-                    node["value"] = 10
+            if phrases.lower() in prerequisite.lower():
+                node["shape"] = "star"
+                node["value"] = 10
     return net

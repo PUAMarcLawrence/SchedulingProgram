@@ -5,6 +5,7 @@ import sqlite3
 from datetime import datetime, timedelta
 # import bcrypt
 import io
+from utils.db_utils import schoolAddrDB
 
 # # Ensure the 'data' directory exists
 # if not os.path.exists('data'):
@@ -13,9 +14,10 @@ import io
 # # Get the absolute path to the database file
 # db_path = os.path.join(os.path.dirname(__file__), 'data', 'school.db')
 
+
 # Database setup
 def get_db_connection():
-    conn = sqlite3.connect('./data/school.db')
+    conn = sqlite3.connect(schoolAddrDB)
     conn.row_factory = sqlite3.Row
     return conn
 
