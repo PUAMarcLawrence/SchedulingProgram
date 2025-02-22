@@ -81,7 +81,7 @@ scheduling_pages = [school_scheduling,] # scheduling_subjects]
 
 
 # ========================== Main Program ===============================
-st.logo("assets/images/Scheduling_Tools.PNG", icon_image="assets/images/scheduler.png",size = "large")
+st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
 page_dict = {}
 if st.session_state.role in ["Admin"]:
