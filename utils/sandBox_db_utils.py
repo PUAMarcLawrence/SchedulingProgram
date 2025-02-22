@@ -1,10 +1,11 @@
 import sqlite3
 import pandas as pd
+from utils.db_utils import path_curriculum,path_sandBox
 pd.set_option('future.no_silent_downcasting', True)
 
 def copy_table(department,program, userID, source_table_name, new_table_name):
-    source_db = f'./data/curriculum/{department}/{program}_curriculum.db'
-    dest_db = f'./data/sandBox/{userID}_sandBox.db'
+    source_db = f'{path_curriculum}/{department}/{program}_curriculum.db'
+    dest_db = f'{path_sandBox}/{userID}_sandBox.db'
     try:
         with sqlite3.connect(source_db) as source_conn, sqlite3.connect(dest_db) as dest_conn:
             source_cursor = source_conn.cursor()
@@ -47,7 +48,7 @@ def copy_table(department,program, userID, source_table_name, new_table_name):
         return False
 
 def create_scratch_sandbox(userID,new_table_name):
-    sand_db = f'./data/sandBox/{userID}_sandBox.db'
+    sand_db = f'{path_sandBox}/{userID}_sandBox.db'
     try:
         with sqlite3.connect(sand_db) as conn:
             conn.execute(
@@ -87,7 +88,7 @@ def create_scratch_sandbox(userID,new_table_name):
         return False
 
 def get_sand_names(userID):
-    sand_db = f'./data/sandBox/{userID}_sandBox.db'
+    sand_db = f'{path_sandBox}/{userID}_sandBox.db'
     try:
         with sqlite3.connect(sand_db) as conn:
             cursor = conn.cursor()
@@ -98,7 +99,7 @@ def get_sand_names(userID):
         return []
 
 def load_from_sand_db(userID,sandBox_name):
-    sand_db = f'./data/sandBox/{userID}_sandBox.db'
+    sand_db = f'{path_sandBox}/{userID}_sandBox.db'
     try:
         with sqlite3.connect(sand_db) as conn:
             cursor = conn.cursor()
@@ -137,7 +138,7 @@ def format_data_to_Graph(data):
     return subjects_dict
 
 def save_data_to_sand_db(data,userID,sandBox_name):
-    sand_db = f'./data/sandBox/{userID}_sandBox.db'
+    sand_db = f'{path_sandBox}/{userID}_sandBox.db'
     try:
         with sqlite3.connect(sand_db) as conn:
             conn.execute(f"DELETE FROM {sandBox_name};")

@@ -1,12 +1,12 @@
 import sqlite3
 import pandas as pd
-from utils.db_utils import get_department, initialize_department_dir
+from utils.db_utils import get_department, initialize_department_dir,path_curriculum
 
 def upload_to_database(data,department_ID,program,program_batch):
     try:
         department = get_department(department_ID)
         initialize_department_dir(department)
-        curriculum = f'./data/curriculum/{department}/{program}_curriculum.db'
+        curriculum = f'{path_curriculum}/{department}/{program}_curriculum.db'
         with sqlite3.connect(curriculum) as conn:
             cursor = conn.cursor()
             columns = data.columns
@@ -29,7 +29,7 @@ def upload_to_database(data,department_ID,program,program_batch):
     
 def get_existing_curriculum(department_ID,program,program_batch):
     department = get_department(department_ID)
-    curriculum = f'./data/curriculum/{department}/{program}_curriculum.db'
+    curriculum = f'{path_curriculum}/{department}/{program}_curriculum.db'
     try:
         with sqlite3.connect(curriculum) as conn:
             cursor = conn.cursor()
