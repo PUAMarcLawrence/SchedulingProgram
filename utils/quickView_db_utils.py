@@ -1,12 +1,10 @@
 import sqlite3
-from utils.db_utils import get_department,initialize_department_dir
-
-department_path = './data/curriculum/'
+from utils.db_utils import get_department,initialize_department_dir,path_curriculum
 
 def get_table_names(department_ID,program):
     department = get_department(department_ID)
     initialize_department_dir(department)
-    curriculum = f'./data/curriculum/{department}/{program}_curriculum.db'
+    curriculum = f'{path_curriculum}/{department}/{program}_curriculum.db'
     try:
         with sqlite3.connect(curriculum) as conn:
             cursor = conn.cursor()
@@ -19,7 +17,7 @@ def get_table_names(department_ID,program):
 def load_subjects_from_db(department_ID,program,table):
     department = get_department(department_ID)
     initialize_department_dir(department)
-    curriculum = f'./data/curriculum/{department}/{program}_curriculum.db'
+    curriculum = f'{path_curriculum}/{department}/{program}_curriculum.db'
     try:
         with sqlite3.connect(curriculum) as conn:
             cursor = conn.cursor()
@@ -58,7 +56,7 @@ def load_subjects_from_db(department_ID,program,table):
 def format_for_graph(department_ID,program,table):
     department = get_department(department_ID)
     initialize_department_dir(department)
-    curriculum = f'./data/curriculum/{department}/{program}_curriculum.db'
+    curriculum = f'{path_curriculum}/{department}/{program}_curriculum.db'
     try:
         with sqlite3.connect(curriculum) as conn:
             cursor = conn.cursor()
