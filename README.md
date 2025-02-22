@@ -134,11 +134,11 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 - [x] Login/Registration
 - [ ] Admin Pages
-- [ ] Deans Pages
+- [x] Deans Pages
     - [x] Subject Chair Management
-- [ ] Program Tree
+- [x] Program Tree
     - [x] QuickView Tree
-    - [ ] Sandbox
+    - [x] Sandbox
 - [ ] Scheduling(Main Program)
 
 See the [open issues](https://github.com/PUAMarcLawrence/SchedulingProgram/issues) for a full list of proposed features (and known issues).
