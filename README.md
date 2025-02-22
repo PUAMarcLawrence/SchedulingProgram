@@ -49,7 +49,7 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
+    <!-- <li><a href="#contributing">Contributing</a></li>-->
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
@@ -146,7 +146,7 @@ See the [open issues](https://github.com/PUAMarcLawrence/SchedulingProgram/issue
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
+<!--
 <!-- CONTRIBUTING -->
 ## Contributing
 
@@ -162,7 +162,7 @@ Don't forget to give the project a star! Thanks again!
 5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+-->
 
 
 <!-- LICENSE -->
