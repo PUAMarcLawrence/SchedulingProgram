@@ -146,8 +146,8 @@ See the [open issues](https://github.com/PUAMarcLawrence/SchedulingProgram/issue
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-<!--
-<!-- CONTRIBUTING -->
+
+<!-- CONTRIBUTING
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
