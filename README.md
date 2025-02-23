@@ -49,7 +49,7 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
+    <!-- <li><a href="#contributing">Contributing</a></li>-->
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
@@ -69,7 +69,7 @@ Professors and department heads can add, remove, and create subjects for each pr
 
 The program is designed to be accessed through the university's local network, allowing faculty members to manage their own subjects and schedules efficiently.
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+<!-- Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`-->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -134,11 +134,11 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 - [x] Login/Registration
 - [ ] Admin Pages
-- [ ] Deans Pages
+- [x] Deans Pages
     - [x] Subject Chair Management
-- [ ] Program Tree
+- [x] Program Tree
     - [x] QuickView Tree
-    - [ ] Sandbox
+    - [x] Sandbox
 - [ ] Scheduling(Main Program)
 
 See the [open issues](https://github.com/PUAMarcLawrence/SchedulingProgram/issues) for a full list of proposed features (and known issues).
@@ -147,7 +147,7 @@ See the [open issues](https://github.com/PUAMarcLawrence/SchedulingProgram/issue
 
 
 
-<!-- CONTRIBUTING -->
+<!-- CONTRIBUTING
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -162,7 +162,7 @@ Don't forget to give the project a star! Thanks again!
 5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+-->
 
 
 <!-- LICENSE -->
