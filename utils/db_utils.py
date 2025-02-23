@@ -2,7 +2,7 @@ import sqlite3
 import hashlib
 import os
 
-db_path = '../data'
+db_path = '/home/mapua_/app/DB'
 path_sandBox = db_path +'/sandBox'
 path_curriculum = db_path +'/curriculum'
 schoolAddrDB = db_path +'/school.db'

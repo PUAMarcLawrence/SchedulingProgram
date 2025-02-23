@@ -6,14 +6,6 @@ from datetime import datetime, timedelta
 import io
 from utils.db_utils import schoolAddrDB
 
-# # Ensure the 'data' directory exists
-# if not os.path.exists('data'):
-#     os.makedirs('data')
-
-# # Get the absolute path to the database file
-# db_path = os.path.join(os.path.dirname(__file__), 'data', 'school.db')
-
-
 # Database setup
 def get_db_connection():
     conn = sqlite3.connect(schoolAddrDB)
