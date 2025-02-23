@@ -1,0 +1,49 @@
+Scheduling Tools 
+User Manual
+
+This is the user manual on how to use the Scheduling Tools program
+Account Creation/ Login
+1.	When you first access the Scheduling Tools website, it will lead the user to the login page
+ 
+2.	If the user already has an account registered, he can use this credentials to login to the system, if not, Click on the Register New User to create an account. It will lead the user to the account creation window.
+ 
+3.	The use must input the required details on the text boxes (e.g. Username, Password.)
+4.	The user can select his role on the system if he is a Dean or a Subject Chair.
+ 
+5.	Next is selecting their program.
+6.	Lastly, The dean or subject chair can select their color for their identification in schedule making.
+ 
+7.	After registering, the user will be lead to the login page where he can use his newly created account to access the system
+ 
+Scheduling Tools Navigation and Utilization
+This section shows the features offered by the Scheduling Tools Program
+1.	The side bar shows the features that can be utilized by the user while using the Scheduling Tools program
+ 
+a.	The Log out button signs out the user from the program and leads him to the login page again.
+b.	The Settings button leads the user to the Settings page where the user can change his password
+ 
+c.	The Subject Chair Management allows the user, specially the Dean to add programs and the names of the subjects chairs
+d.	The Upload Curriculum button allows the user to upload an excel (.xlsx) file in a fixed format to be displayed, reviewed, and edited
+ 
+If the user chooses to upload an excel file, the file will be automatically read and displayed on the same page
+ 
+After viewing and reviewing the displayed curriculum, the user can choose a program to upload it to and then scroll down the page to click the upload curriculum to insert the curriculum on the database
+ 
+ 
+Note: Every cell in the displayed curriculum can be modified
+The Download Template Excel File button downloads an formatted empty excel file for the user to use if he decides to create or edit a curriculum.
+e.	The Quick View Button asks the user to choose a program to display its curriculum
+ 
+When a curriculum is chosen, the curriculum’s program tree will be displayed. The Program Tree displays all courses in the curriculum connected by their pre-requisites or co-requisites.
+ 
+The window of the Program Tree can be zoomed in for a more clearer readability and navigation
+
+The user can click and hover on any node to see the information of the course and the courses it is connected to
+ 
+f.	The Sandbox button leads the user to the sandbox curriculum creation menu. It allows the user to create a curriculum from scratch or modify an existing curriculum and save it as a new one
+ 
+After creating a sandbox, the user can select the sandbox from the dropdown menu
+ 
+ 
+The user can modify any cell in the display curriculum
+After modifying, the user can press the save button to apply the changes.
