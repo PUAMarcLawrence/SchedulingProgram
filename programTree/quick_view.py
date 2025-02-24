@@ -53,7 +53,7 @@ if tables:
                 """
                 ### Legend
                 - ─── **Solid Line**: Pre-Requisite
-                - \- - - **Broken Line**: Co-Requisite
+                - \ - - - **Broken Line**: Co-Requisite
                 - ⭐ **Star Node**: Year Standing Prerequisite
                 """
                 )
