@@ -125,7 +125,8 @@ if open_sandBox:
                 st.write("Settings")
                 option = st.selectbox(
                     "Options",
-                    ("Transfer to Active","Rename","Delete"),
+                    # ("Transfer to Active",
+                    ("Rename","Delete"),
                     label_visibility='collapsed',
                     key=f"SettingBox_{open_sandBox[i]}"
                 )
