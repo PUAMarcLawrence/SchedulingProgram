@@ -151,3 +151,22 @@ def save_data_to_sand_db(data,userID,sandBox_name):
     except sqlite3.Error as e:
         print(f"Database connection error: {e}")
         return False
+
+def rename_sandBox(userID,old_sandName,new_sandName):
+    sand_db = f'{path_sandBox}/{userID}_sandBox.db'
+    try:
+        with sqlite3.connect(sand_db) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"ALTER TABLE {old_sandName} RENAME TO {new_sandName}")
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return False
+
+def delete_sandBox(userID,sandName):
+    sand_db = f'{path_sandBox}/{userID}_sandBox.db'
+    try:
+        with sqlite3.connect(sand_db) as conn:
+            conn.execute(f"DROP TABLE IF EXISTS {sandName}")
+    except sqlite3.Error as e:
+        print(f"Database connection error: {e}")
+        return False

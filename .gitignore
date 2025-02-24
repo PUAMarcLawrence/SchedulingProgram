@@ -5,3 +5,6 @@ components/__pycache__/
 utils/__pycache__/
 scheduling/__pycache__/
 programTree/__pycache__/
+.dockerignore
+*.yml
+Dockerfile

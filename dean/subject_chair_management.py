@@ -68,5 +68,5 @@ with modify.popover("Modify"):
                 st.rerun()
             else:
                 st.error("An error occurred.")
-    st.warning("This action cannot be UNDONE!")
+    st.warning("This action cannot be UNDONE!", icon="⚠️")
 
