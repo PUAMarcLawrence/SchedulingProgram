@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db, create_scratch_sandbox
+from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db, create_scratch_sandbox, rename_sandBox,delete_sandBox
 from utils.db_utils import get_department_programs,get_program,get_department
 from utils.quickView_db_utils import get_table_names
 from utils.graph_utils import build_interactive_subject_graph
@@ -106,7 +106,7 @@ if open_sandBox:
                             width='small'
                         ),
                     },
-                    height=len(subjects) * 35 + (70*110),
+                    height=len(subjects) * 35 + (70),
                     num_rows='dynamic',
                     use_container_width=True,
                     key=f"Editor_{open_sandBox[i]}"
@@ -121,7 +121,28 @@ if open_sandBox:
                     build_interactive_subject_graph(converted_data).generate_html(),
                     height=800
                 )
-            with settings.popover("",icon="🔧"):
+            with settings.popover("",icon="⚙️"):
                 st.write("Settings")
-                option = st.selectbox("Options",("Delete","Rename"),label_visibility='collapsed',key=f"SettingBox_{open_sandBox[i]}")
-            
+                option = st.selectbox(
+                    "Options",
+                    ("Transfer to Active","Rename","Delete"),
+                    label_visibility='collapsed',
+                    key=f"SettingBox_{open_sandBox[i]}"
+                )
+                match option:
+                    # case "Transfer to Active":
+                    #     sub_option = st.selectbox("SubOptions",("Existing","New Curriculum"),label_visibility='collapsed',key=f"Transfer_setting_{open_sandBox[i]}")
+                    #     match sub_option:
+                    #         case "Existing":
+                    #             selected_exist_curriculum = st.selectbox("Existing Curriculum",)
+                    #         case "New Curriculum":
+                    case "Rename":
+                        new_sandbox_name = st.text_input("New SandBox Name",label_visibility='collapsed',placeholder=open_sandBox[i],key=f"new_name_textBox_{open_sandBox[i]}")
+                        if st.button("Rename",key=f"rename_button_{open_sandBox[i]}"):
+                            rename_sandBox(st.session_state['ID'],open_sandBox[i],new_sandbox_name)
+                            st.rerun()
+                    case "Delete":
+                        if st.button("Delete",key=f"delete_button_{open_sandBox[i]}"):
+                            delete_sandBox(st.session_state['ID'],open_sandBox[i])
+                            st.rerun()
+                        st.warning("This action cannot be UNDONE!", icon="⚠️")
