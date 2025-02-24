@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  myapp:
+    build: .
+    container_name: streamlit_MapuaScheduler
+    restart: always
+    volumes:
+      - MapuaDB:/data
+    ports:
+      - "8501:8501"
+
+volumes:
+  MapuaDB:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mapua_/app/DB
