@@ -92,3 +92,4 @@ def login():
     if st.button("Register New User"):
         st.session_state['pageLogin'] = False
         st.rerun()
+st.link_button("Go to Google", "https://www.google.com")
