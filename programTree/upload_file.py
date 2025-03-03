@@ -37,9 +37,10 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     prog_select,year_select = st.columns(2)
     program_name = prog_select.text_input("Enter the Program")
+    program_name_no_spaces = program_name.replace(" ", "")
     years = list(range(datetime.now().year - 15, datetime.now().year + 15))
     selected_year = year_select.selectbox("Batch:", years, index=len(years) - 15)
-    program_batch = f"{program_name.upper()}_{str(selected_year)}"
+    program_batch = f"{program_name_no_spaces.upper()}_{str(selected_year)}"
     if st.session_state['role'] == "Dean":
         program = st.selectbox(
             "Select Program to Uplaod to:",
