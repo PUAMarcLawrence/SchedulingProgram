@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db, create_scratch_sandbox, rename_sandBox,delete_sandBox
+from utils.sandBox_db_utils import copy_table, get_sand_names,load_from_sand_db,format_data_to_Graph,save_data_to_sand_db, create_scratch_sandbox, rename_sandBox,delete_sandBox,transfer_update_curriculum
 from utils.db_utils import get_department_programs,get_program,get_department
 from utils.quickView_db_utils import get_table_names
 from utils.graph_utils import build_interactive_subject_graph
@@ -125,18 +125,33 @@ if open_sandBox:
                 st.write("Settings")
                 option = st.selectbox(
                     "Options",
-                    # ("Transfer to Active",
-                    ("Rename","Delete"),
+                    (
+                        "Transfer to Active",
+                        "Rename",
+                        "Delete"
+                    ),
                     label_visibility='collapsed',
                     key=f"SettingBox_{open_sandBox[i]}"
                 )
                 match option:
-                    # case "Transfer to Active":
-                    #     sub_option = st.selectbox("SubOptions",("Existing","New Curriculum"),label_visibility='collapsed',key=f"Transfer_setting_{open_sandBox[i]}")
-                    #     match sub_option:
-                    #         case "Existing":
-                    #             selected_exist_curriculum = st.selectbox("Existing Curriculum",)
-                    #         case "New Curriculum":
+                    case "Transfer to Active":
+                        sub_option = st.selectbox("SubOptions",("Existing","New Curriculum"),label_visibility='collapsed',key=f"Transfer_setting_{open_sandBox[i]}")
+                        match sub_option:
+                            case "Existing":
+                                if st.session_state['role'] == "Dean":
+                                    program = st.selectbox(
+                                        "Select Program to view:",
+                                        get_department_programs(st.session_state['department_ID'])
+                                    )
+                                else:
+                                    program = st.session_state['program_ID']
+                                    program = get_program(program)
+                                tables = get_table_names(st.session_state['department_ID'],program)
+                                selected_exist_curriculum = st.selectbox("Existing Curriculum",tables)
+                                if st.button("Transfer Update",key=f"transfer_update_button_{open_sandBox[i]}"):
+                                    transfer_update_curriculum(st.session_state['ID'],open_sandBox[i],st.session_state['department_ID'],program,selected_exist_curriculum)
+                            case "New Curriculum":
+                                st.write("New Curriculum")
                     case "Rename":
                         new_sandbox_name = st.text_input("New SandBox Name",label_visibility='collapsed',placeholder=open_sandBox[i],key=f"new_name_textBox_{open_sandBox[i]}")
                         if st.button("Rename",key=f"rename_button_{open_sandBox[i]}"):

@@ -170,3 +170,6 @@ def delete_sandBox(userID,sandName):
     except sqlite3.Error as e:
         print(f"Database connection error: {e}")
         return False
+    
+def ttransfer_update_curriculum(ID,sand_name,department_ID,program,selected_curriculum):
+    print("None")
