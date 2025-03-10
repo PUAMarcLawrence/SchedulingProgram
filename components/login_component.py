@@ -8,12 +8,15 @@ def AdminRegistration():
     admin_user = st.text_input("Enter the Admin Username")
     admin_pass = st.text_input("Enter the Admin Password",type="password")
     if st.button("Register"):
-        if create_admin(admin_user,admin_pass):
-            st.success("Admin account created successfully.")
-            time.sleep(2)
-            st.rerun()
+        if admin_pass and admin_user:
+            if create_admin(admin_user,admin_pass):
+                st.success("Admin account created successfully.")
+                time.sleep(2)
+                st.rerun()
+            else:
+                st.error("An Error occured!")
         else:
-            st.error("An Error occured!")
+            st.error("Fields cannont be BLANK")
 
 def register():
     st.set_page_config(layout="centered")

@@ -95,7 +95,7 @@ if st.session_state.role in ["Subject Chair","Dean"]:
 
 
 if st.session_state['loggedIn'] and len(page_dict) > 0 :
-    pg = st.navigation({"Account": account_pages} | page_dict)
+    pg = st.navigation( {"Account": account_pages} | page_dict)
 else:
     initialize_db()
     if check_anyUser():
