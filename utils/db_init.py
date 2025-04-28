@@ -21,10 +21,11 @@ def initialize_db():
         os.makedirs(courses_db)
     if not os.path.exists(schedules_db):
         os.makedirs(schedules_db)
-    try:
-        with sqlite3.connect(users_db) as conn:
-            conn.execute('PRAGMA foreign_keys = ON;')
-            conn.execute(
+    with sqlite3.connect(users_db) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute('PRAGMA foreign_keys = ON;')
+            cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS users (
                     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL UNIQUE,
@@ -32,7 +33,7 @@ def initialize_db():
                     role TEXT NOT NULL
                 )'''
             )
-            conn.execute(
+            cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS departments (
                     department_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL UNIQUE
@@ -40,7 +41,7 @@ def initialize_db():
                     FOREIGN KEY (dean_id) REFERENCES users (user_id) ON DELETE CASCADE
                 )'''
             )
-            conn.execute(
+            cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS programs (
                     program_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL UNIQUE,
@@ -50,7 +51,7 @@ def initialize_db():
                     FOREIGN KEY (department_id) REFERENCES departments (department_id) ON DELETE CASCADE
                 )'''
             )
-            conn.execute(
+            cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS courses (
                     course_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     code TEXT NOT NULL UNIQUE,
@@ -62,7 +63,7 @@ def initialize_db():
                     FOREIGN KEY (department_id) REFERENCES departments (department_id) ON DELETE CASCADE
                 )'''
             )
-            conn.execute(
+            cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS schedules (
                     schedule_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     course_id INTEGER NOT NULL,
@@ -71,5 +72,7 @@ def initialize_db():
                     FOREIGN KEY (course_id) REFERENCES courses (course_id) ON DELETE CASCADE
                 )'''
             )
-    except sqlite3.OperationalError as e:
-        print(f"Error initializing database: {e}")
+            conn.commit()
+        except sqlite3.OperationalError as e:
+            conn.rollback()
+            print(f"Error creating tables: {e}")
