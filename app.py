@@ -1,5 +1,6 @@
 import streamlit as st
-from utils.db_utils import initialize_db, admin_registered
+import time
+from utils.db_utils import initialize_db, admin_registeration_check,create_user,get_departments
 
 if "role" not in st.session_state:
     st.session_state.role = None
@@ -10,42 +11,88 @@ if "pageLogin" not in st.session_state:
 
 ROLES = [None, "Admin", "Dean", "Subject CHair"]
 
-def AdminRegistration():
+def admin_registration():
     st.set_page_config(layout="centered")
     st.title("Admin Registration")
-    st.warning("Please register as an admin to use the system.")
+    st.info("Please register an admin account to initialize the system.")
     username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    confirm_password = st.text_input("Confirm Password", type="password")
-
+    first, second = st.columns(2)
+    password = first.text_input("Password", type="password")
+    confirm_password = second.text_input("Confirm Password", type="password")
+    role = "Admin"
+    department = None
+    program = None
+    color = "#000000"
     if st.button("Register"):
-        if password == confirm_password:
-            # Here you would typically save the username and password to a database
-            st.success("Admin registered successfully!")
-        else:
+        if password != confirm_password:
             st.error("Passwords do not match.")
-
-def register():
-    st.set_page_config(layout="centered")
-    st.title("Register")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    confirm_password = st.text_input("Confirm Password", type="password")
-
-    if st.button("Register"):
-        if password == confirm_password:
-            # Here you would typically save the username and password to a database
-            st.success("User registered successfully!")
         else:
-            st.error("Passwords do not match.")
+            reg_result = create_user(username,password,role,department,program,color)
+            if reg_result.get("status"):
+                st.success(reg_result.get("message"))
+                time.sleep(2)
+                st.rerun()
+            else:
+                st.error(reg_result.get("message"))
 
 def login():
-
     st.set_page_config(layout="centered")
     st.title("Welcome to the School Scheduling System")
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+    if st.button("Register New User"):
+        st.session_state['pageLogin'] = False
+        st.rerun()
+
+
+def general_registration():
+    st.set_page_config(layout="centered")
+    st.header("Register")
+    username = st.text_input("Username")
+    first, second = st.columns(2)
+    password = first.text_input("Password", type="password")
+    confirm_password = second.text_input("Confirm Password", type="password")
+    role = st.selectbox("Select your role",["Dean","Subject Chair"],index=None,placeholder="Select a role")
+    third, forth = st.columns(2,vertical_alignment="bottom")
+    if role == "Dean":
+        department = third.text_input("Department", value = None)
+    elif role == "Subject Chair":
+        department_found = forth.toggle("Not in the List?", value = False)
+        if department_found:
+            department = third.text_input("Department", value = None)
+            program = None
+        else:
+            department = third.selectbox(
+                "Department",
+                get_departments(),
+                index = None,
+                placeholder = "Select or Enter the your department",
+            )
+        program = st.text_input(
+            "Program",
+            value = None
+            )
+    if role != None:
+        color = st.color_picker("Pick a color to represent your account")
+    if st.button("Register",disabled=role is None):
+        if password != confirm_password:
+            st.error("Passwords do not match.")
+        else:
+            if department != None:
+                department = department.upper()
+            if program != None:
+                program = program.upper()
+            reg_result = create_user(username,password,role,department,program,color)
+            if reg_result.get("status"):
+                st.success(reg_result.get("message"))
+                time.sleep(2)
+                st.rerun()
+            else:
+                st.error(reg_result.get("message"))
+    if st.button("Already have an account? Login"):
+        st.session_state['pageLogin'] = True
+        st.rerun()
 
 def logout():
     st.session_state.role = None
@@ -55,8 +102,6 @@ role = st.session_state.role
 
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
-
-
 
 # ========================== Main Program ===============================
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
@@ -70,13 +115,11 @@ if st.session_state['loggedIn'] and len(page_dict) > 0 :
     pg = st.navigation( {"Account": account_pages} | page_dict)
 else:
     initialize_db()
-    if admin_registered():
-        pg = st.navigation([st.Page(AdminRegistration)])
-        pg.run()
+    if admin_registeration_check():
+        pg = st.navigation([st.Page(admin_registration)])
     else:
-        st.title("Welcome to the School Scheduling System")
-    #     if st.session_state['pageLogin']==True:
-    #         pg = st.navigation([st.Page(login)])
-    #     else:
-    #         pg = st.navigation([st.Page(register)])
-# pg.run()
+        if st.session_state['pageLogin']==True:
+            pg = st.navigation([st.Page(login,title="Login")])
+        else:
+            pg = st.navigation([st.Page(general_registration,title="Register")])
+pg.run()
