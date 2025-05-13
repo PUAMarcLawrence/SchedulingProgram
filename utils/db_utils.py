@@ -15,7 +15,7 @@ def initialize_db():
             cursor.execute('PRAGMA foreign_keys = ON;')
             cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER PRIMARY KEY,
                     username TEXT NOT NULL UNIQUE,
                     password TEXT NOT NULL UNIQUE,
                     role TEXT NOT NULL,
@@ -24,15 +24,15 @@ def initialize_db():
             )
             cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS departments (
-                    department_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    department_id INTEGER PRIMARY KEY,
                     department TEXT NOT NULL UNIQUE,
-                    daen_id INTEGER UNIQUE,
-                    FOREIGN KEY (daen_id) REFERENCES users(user_id) ON DELETE SET NULL
+                    dean_id INTEGER UNIQUE,
+                    FOREIGN KEY (dean_id) REFERENCES users(user_id) ON DELETE SET NULL
                 )'''
             )
             cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS programs (
-                    program_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    program_id INTEGER PRIMARY KEY,
                     program TEXT NOT NULL UNIQUE,
                     chair_id INTEGER UNIQUE,
                     department_id INTEGER NOT NULL,
@@ -59,24 +59,69 @@ def create_user(username,password,role,department,program,color):
     with sqlite3.connect(university_db) as conn:
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT 1 FROM departments WHERE department = ? LIMIT 1", (department,))
-            department_exists = False
-            program_exists = False
-            if cursor.fetchone():
-                department_exists = True
-            cursor.execute("SELECT 1 FROM programs WHERE program = ? LIMIT 1", (program,))
-            if cursor.fetchone():
-                program_exists = True
             cursor.execute('BEGIN TRANSACTION;')
             cursor.execute(
-                '''INSERT INTO users (username, password, role, color) VALUES (?, ?, ?, ?)''',
-                (username, hash_password(password), role, color)
+                '''
+                INSERT INTO users (username, password, role, color) 
+                VALUES (?, ?, ?, ?)
+                ''',
+                (username, hash_password(password), role, color,)
             )
+            if department is not None:
+                cursor.execute(
+                    '''
+                    INSERT OR IGNORE INTO departments (department)
+                    VALUES (?)
+                    ''',
+                    (department,)
+                )
+            if role == "Dean":
+                cursor.execute(
+                    '''
+                    UPDATE departments
+                    SET dean_id = (SELECT user_id FROM users WHERE username = ?)
+                    WHERE department = ? AND (dean_id IS NULL)
+                    ''',
+                    (username, department,)
+                )
+                if cursor.rowcount == 0:
+                    raise sqlite3.IntegrityError("Department already has a dean.")
+            if program is not None:
+                cursor.execute(
+                    '''
+                    INSERT OR IGNORE INTO programs (program, department_id)
+                    VALUES (?, (SELECT department_id FROM departments WHERE department = ?))
+                    ''',
+                    (program, department,)
+                )
+            if role == "Subject Chair":
+                cursor.execute(
+                    '''
+                    UPDATE programs
+                    SET chair_id = (SELECT user_id FROM users WHERE username = ?)
+                    WHERE program = ? AND (chair_id IS NULL)
+                    ''',
+                    (username, program,)
+                )
+                if cursor.rowcount == 0:
+                    raise sqlite3.IntegrityError("Program already has a chair person.")
             conn.commit()
-            return {"status": True, "message": f"Admin {username} created successfully."}
+            if role == "Admin":
+                return {"status": True, "message": f"Admin {username} created successfully."}
+            else:
+                return {"status": True, "message": f"{role} {username} created successfully."}
         except sqlite3.IntegrityError as e:
             conn.rollback()
-            return {"status": False, "message": f"Error: {e}"}
+            if "users.color" in str(e):
+                return {"status": False, "message": "Color already in use."}
+            elif "users.username" in str(e):
+                return {"status": False, "message": "Username already in use."}
+            elif "users.password" in str(e):
+                return {"status": False, "message": "Enter a UNIQUE password."}
+            # elif "FOREIGN KEY constraint failed" in str(e):
+            #     return {"status": False, "message": f"Department {department} does not exist."}
+            else:
+                return {"status": False, "message": f"Error: {e}"}
 
 def get_departments():
     try:

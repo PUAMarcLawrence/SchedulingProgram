@@ -24,16 +24,19 @@ def admin_registration():
     program = None
     color = "#000000"
     if st.button("Register"):
-        if password != confirm_password:
-            st.error("Passwords do not match.")
-        else:
-            reg_result = create_user(username,password,role,department,program,color)
-            if reg_result.get("status"):
-                st.success(reg_result.get("message"))
-                time.sleep(2)
-                st.rerun()
+        if username and password and confirm_password:
+            if password != confirm_password:
+                st.error("Passwords do not match.")
             else:
-                st.error(reg_result.get("message"))
+                reg_result = create_user(username,password,role,department,program,color)
+                if reg_result.get("status"):
+                    st.success(reg_result.get("message"))
+                    time.sleep(2)
+                    st.rerun()
+                else:
+                    st.error(reg_result.get("message"))
+        else:
+            st.error("Please enter both username and password.")
 
 def login():
     st.set_page_config(layout="centered")
@@ -41,10 +44,21 @@ def login():
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if username == "" or password == "":
+            st.error("Please enter both username and password.")
+        else:
+            with st.spinner("Logging in..."):
+                time.sleep(2)
+                if username == "admin" and password == "admin":
+                    st.session_state.role = "Admin"
+                    st.session_state.loggedIn = True
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password.")
     if st.button("Register New User"):
         st.session_state['pageLogin'] = False
         st.rerun()
-
 
 def general_registration():
     st.set_page_config(layout="centered")
@@ -56,12 +70,12 @@ def general_registration():
     role = st.selectbox("Select your role",["Dean","Subject Chair"],index=None,placeholder="Select a role")
     third, forth = st.columns(2,vertical_alignment="bottom")
     if role == "Dean":
-        department = third.text_input("Department", value = None)
+        department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.")
+        program = None
     elif role == "Subject Chair":
         department_found = forth.toggle("Not in the List?", value = False)
         if department_found:
-            department = third.text_input("Department", value = None)
-            program = None
+            department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.")
         else:
             department = third.selectbox(
                 "Department",
@@ -71,25 +85,30 @@ def general_registration():
             )
         program = st.text_input(
             "Program",
-            value = None
+            value = None,
+            help="e.g. CPE,ECE,EE etc.",
             )
     if role != None:
         color = st.color_picker("Pick a color to represent your account")
     if st.button("Register",disabled=role is None):
-        if password != confirm_password:
-            st.error("Passwords do not match.")
-        else:
-            if department != None:
-                department = department.upper()
-            if program != None:
-                program = program.upper()
-            reg_result = create_user(username,password,role,department,program,color)
-            if reg_result.get("status"):
-                st.success(reg_result.get("message"))
-                time.sleep(2)
-                st.rerun()
+        if username and password and confirm_password and department:
+            if password != confirm_password:
+                st.error("Passwords do not match.")
             else:
-                st.error(reg_result.get("message"))
+                if department != None:
+                    department = department.upper()
+                if program != None:
+                    program = program.upper()
+                reg_result = create_user(username,password,role,department,program,color)
+                if reg_result.get("status"):
+                    st.success(reg_result.get("message"))
+                    time.sleep(2)
+                    st.session_state['pageLogin'] = True
+                    st.rerun()
+                else:
+                    st.error(reg_result.get("message"))
+        else:
+            st.error("Please enter all required fields.")
     if st.button("Already have an account? Login"):
         st.session_state['pageLogin'] = True
         st.rerun()
