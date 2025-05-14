@@ -132,3 +132,38 @@ def get_departments():
         return departments
     except sqlite3.Error as e:
         return []
+
+def check_user(username,password):
+    with sqlite3.connect(university_db) as conn:
+        cursor = conn.execute(
+            '''
+            SELECT role FROM users
+            WHERE username = ? AND password = ?
+            ''',
+            (username, hash_password(password),)
+        )
+        role = cursor.fetchone()
+        if role:
+            if role[0] == 'Subject Chair':
+                cursor = conn.execute(
+                    '''
+                    SELECT user_id, username, role, color, department, program FROM users
+                    INNER JOIN departments ON programs.department_id = departments.department_id
+                    LEFT JOIN programs ON users.user_id = programs.chair_id
+                    WHERE username = ? AND password = ?
+                    ''',
+                    (username, hash_password(password),)
+                )
+            else:
+                cursor = conn.execute(
+                    '''
+                    SELECT user_id, username, role, color, department, program FROM users
+                    LEFT JOIN departments ON users.user_id = departments.dean_id
+                    LEFT JOIN programs ON users.user_id = programs.chair_id
+                    WHERE username = ? AND password = ?
+                    ''',
+                    (username, hash_password(password),)
+                )
+            return cursor.fetchone()
+        else:
+            return None

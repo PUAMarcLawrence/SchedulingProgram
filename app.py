@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from utils.db_utils import initialize_db, admin_registeration_check,create_user,get_departments
+from utils.db_utils import initialize_db, admin_registeration_check,create_user,get_departments,check_user
 
 if "role" not in st.session_state:
     st.session_state.role = None
@@ -45,17 +45,16 @@ def login():
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
-        if username == "" or password == "":
-            st.error("Please enter both username and password.")
-        else:
-            with st.spinner("Logging in..."):
+        if username and password:
+            login_result = check_user(username,password)
+            if login_result:
+                st.success("Login successful!")
                 time.sleep(2)
-                if username == "admin" and password == "admin":
-                    st.session_state.role = "Admin"
-                    st.session_state.loggedIn = True
-                    st.rerun()
-                else:
-                    st.error("Invalid username or password.")
+                st.rerun()
+            else:
+                st.error("Invalid username or password.")
+        else:
+            st.error("Please enter both username and password.")
     if st.button("Register New User"):
         st.session_state['pageLogin'] = False
         st.rerun()
