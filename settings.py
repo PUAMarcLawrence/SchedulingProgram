@@ -138,11 +138,9 @@ def userManual():
         )
         st.image("images/usermanual_images/Picture26.png")
 
-option = st.selectbox("Settings", ["Change Password", "User Manual"])
+option = st.selectbox("Settings", ["Change Password"], index = None)
 match option:
-    case "User Manual":
-        userManual()
     case "Change Password":
         change_password()
 
-# 
+userManual()

@@ -145,14 +145,20 @@ manage_users = st.Page(
 
 quick_view = st.Page(
     "programTree/quick_view.py",
-    title="Program Tree",
+    title="Quick View",
     icon=":material/account_tree:",
     default=(role == "Dean"or role == "Subject Chair"),
 )
 
+upload_curiculum = st.Page(
+    "programTree/upload_curriculum.py",
+    title="Upload Curiculum",
+    icon=":material/upload:")
+
 account_pages = [logout_page, settings]
 admin_pages = [manage_users]
-program_tree_pages = [quick_view]
+program_tree_pages = [quick_view, upload_curiculum]
+
 # ========================== Main Program ===============================
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
