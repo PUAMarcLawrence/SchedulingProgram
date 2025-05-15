@@ -5,6 +5,7 @@ import hashlib
 db_path = './data'
 university_db = db_path +'/university.db'
 
+#===========================Account Creation/Modification===========================
 def initialize_db():
     if not os.path.exists(db_path):
         os.makedirs(db_path)
@@ -118,10 +119,7 @@ def create_user(username,password,role,department,program,color):
                 return {"status": False, "message": "Username already in use."}
             elif "users.password" in str(e):
                 return {"status": False, "message": "Enter a UNIQUE password."}
-            # elif "FOREIGN KEY constraint failed" in str(e):
-            #     return {"status": False, "message": f"Department {department} does not exist."}
-            else:
-                return {"status": False, "message": f"Error: {e}"}
+            return {"status": False, "message": f"Error: {e}"}
 
 def get_departments():
     try:
@@ -167,3 +165,38 @@ def check_user(username,password):
             return cursor.fetchone()
         else:
             return None
+
+def change_password_to_new(username,old_password,new_password):
+    with sqlite3.connect(university_db) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute('BEGIN TRANSACTION;')
+            cursor.execute(
+                '''
+                SELECT password FROM users
+                WHERE username = ?
+                ''',
+                (username,)
+            )
+            stored_password = cursor.fetchone()[0]
+            if hash_password(old_password) != stored_password:
+                raise sqlite3.IntegrityError("Incorrect old Password, please try again.")
+            cursor.execute(
+                '''
+                UPDATE users
+                SET password = ?
+                WHERE username = ?
+                ''',
+                (hash_password(new_password), username,)
+            )
+            if cursor.rowcount == 0:
+                raise sqlite3.IntegrityError("Password change failed.")
+            conn.commit()
+            return {"status": True, "message": "Password Successfully Changed."}
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            if "users.password" in str(e):
+                return {"status": False, "message": "Enter a UNIQUE password."}
+            return {"status": False, "message": str(e)}
+
+#===========================Program Tree===========================

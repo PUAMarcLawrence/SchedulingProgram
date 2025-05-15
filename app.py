@@ -9,10 +9,9 @@ if "loggedIn" not in st.session_state:
 if "pageLogin" not in st.session_state:
     st.session_state.pageLogin = True
 
-ROLES = [None, "Admin", "Dean", "Subject CHair"]
+ROLES = [None, "Admin", "Dean", "Subject Chair"]
 
 def admin_registration():
-    st.set_page_config(layout="centered")
     st.title("Admin Registration")
     st.info("Please register an admin account to initialize the system.")
     username = st.text_input("Username")
@@ -39,28 +38,37 @@ def admin_registration():
             st.error("Please enter both username and password.")
 
 def login():
-    st.set_page_config(layout="centered")
     st.title("Welcome to the School Scheduling System")
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
-        if username and password:
-            login_result = check_user(username,password)
-            if login_result:
-                st.success("Login successful!")
-                time.sleep(2)
-                st.rerun()
+        with st.spinner("Logging in..."):
+            if username and password:
+                login_result = check_user(username,password)
+                if login_result:
+                    st.session_state.update({
+                        'loggedIn': True,
+                        'user_id': login_result[0],
+                        'username': login_result[1],
+                        'role': login_result[2],
+                        'color': login_result[3],
+                        'department': login_result[4],
+                        'program': login_result[5],
+                    })
+                    st.success("Login successful!")
+                    st.session_state['loggedIn'] = True
+                    time.sleep(2)
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password.")
             else:
-                st.error("Invalid username or password.")
-        else:
-            st.error("Please enter both username and password.")
+                st.error("Please enter both username and password.")
     if st.button("Register New User"):
         st.session_state['pageLogin'] = False
         st.rerun()
 
 def general_registration():
-    st.set_page_config(layout="centered")
     st.header("Register")
     username = st.text_input("Username")
     first, second = st.columns(2)
@@ -113,7 +121,15 @@ def general_registration():
         st.rerun()
 
 def logout():
-    st.session_state.role = None
+    st.session_state.update({
+                        'loggedIn': False,
+                        'user_id': None,
+                        'username': None,
+                        'role': None,
+                        'color': None,
+                        'department': None,
+                        'program': None,
+                    })
     st.rerun()
 
 role = st.session_state.role
@@ -121,16 +137,33 @@ role = st.session_state.role
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
 
+manage_users = st.Page(
+    "admin/manage_users.py", 
+    title="Manage Users", 
+    icon=":material/people:", 
+    default=(role == "Admin"),)
+
+quick_view = st.Page(
+    "programTree/quick_view.py",
+    title="Program Tree",
+    icon=":material/account_tree:",
+    default=(role == "Dean"or role == "Subject Chair"),
+)
+
+account_pages = [logout_page, settings]
+admin_pages = [manage_users]
+program_tree_pages = [quick_view]
 # ========================== Main Program ===============================
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
 
-account_pages = [logout_page, settings]
-
 page_dict = {}
-
+if st.session_state.role in ["Admin"]:
+    page_dict["Admin"] = admin_pages
+if st.session_state.role in ["Dean", "Subject Chair"]:
+    page_dict["Curriculum Builder"] = program_tree_pages
 
 if st.session_state['loggedIn'] and len(page_dict) > 0 :
-    pg = st.navigation( {"Account": account_pages} | page_dict)
+    pg = st.navigation({"Account": account_pages} | page_dict)
 else:
     initialize_db()
     if admin_registeration_check():
@@ -141,3 +174,4 @@ else:
         else:
             pg = st.navigation([st.Page(general_registration,title="Register")])
 pg.run()
+st.sidebar.text(f"[{st.session_state['role']}] {st.session_state['username']} ")
