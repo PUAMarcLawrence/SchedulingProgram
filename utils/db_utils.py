@@ -26,7 +26,7 @@ def initialize_db():
             cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS departments (
                     department_id INTEGER PRIMARY KEY,
-                    department TEXT NOT NULL UNIQUE,
+                    department_name TEXT NOT NULL UNIQUE,
                     dean_id INTEGER UNIQUE,
                     FOREIGN KEY (dean_id) REFERENCES users(user_id) ON DELETE SET NULL
                 )'''
@@ -34,13 +34,14 @@ def initialize_db():
             cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS programs (
                     program_id INTEGER PRIMARY KEY,
-                    program TEXT NOT NULL UNIQUE,
+                    program_name TEXT NOT NULL UNIQUE,
                     chair_id INTEGER UNIQUE,
                     department_id INTEGER NOT NULL,
                     FOREIGN KEY (chair_id) REFERENCES users(user_id) ON DELETE SET NULL,
                     FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
                 )'''
             )
+            # cursor.execute()
             conn.commit()
         except sqlite3.OperationalError as e:
             conn.rollback()
@@ -71,7 +72,7 @@ def create_user(username,password,role,department,program,color):
             if department is not None:
                 cursor.execute(
                     '''
-                    INSERT OR IGNORE INTO departments (department)
+                    INSERT OR IGNORE INTO departments (department_name)
                     VALUES (?)
                     ''',
                     (department,)
@@ -81,7 +82,7 @@ def create_user(username,password,role,department,program,color):
                     '''
                     UPDATE departments
                     SET dean_id = (SELECT user_id FROM users WHERE username = ?)
-                    WHERE department = ? AND (dean_id IS NULL)
+                    WHERE department_name = ? AND (dean_id IS NULL)
                     ''',
                     (username, department,)
                 )
@@ -90,8 +91,8 @@ def create_user(username,password,role,department,program,color):
             if program is not None:
                 cursor.execute(
                     '''
-                    INSERT OR IGNORE INTO programs (program, department_id)
-                    VALUES (?, (SELECT department_id FROM departments WHERE department = ?))
+                    INSERT OR IGNORE INTO programs (program_name, department_id)
+                    VALUES (?, (SELECT department_id FROM departments WHERE department_name = ?))
                     ''',
                     (program, department,)
                 )
@@ -100,7 +101,7 @@ def create_user(username,password,role,department,program,color):
                     '''
                     UPDATE programs
                     SET chair_id = (SELECT user_id FROM users WHERE username = ?)
-                    WHERE program = ? AND (chair_id IS NULL)
+                    WHERE program_name = ? AND (chair_id IS NULL)
                     ''',
                     (username, program,)
                 )
@@ -125,7 +126,7 @@ def get_departments():
     try:
         with sqlite3.connect(university_db) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT department FROM departments")
+            cursor.execute("SELECT department_name FROM departments")
             departments = [row[0] for row in cursor.fetchall()]
         return departments
     except sqlite3.Error as e:
@@ -145,7 +146,7 @@ def check_user(username,password):
             if role[0] == 'Subject Chair':
                 cursor = conn.execute(
                     '''
-                    SELECT user_id, username, role, color, department, program FROM users
+                    SELECT user_id, username, role, color, department_name, program_name FROM users
                     INNER JOIN departments ON programs.department_id = departments.department_id
                     LEFT JOIN programs ON users.user_id = programs.chair_id
                     WHERE username = ? AND password = ?
@@ -155,7 +156,7 @@ def check_user(username,password):
             else:
                 cursor = conn.execute(
                     '''
-                    SELECT user_id, username, role, color, department, program FROM users
+                    SELECT user_id, username, role, color, department_name, program_name FROM users
                     LEFT JOIN departments ON users.user_id = departments.dean_id
                     LEFT JOIN programs ON users.user_id = programs.chair_id
                     WHERE username = ? AND password = ?

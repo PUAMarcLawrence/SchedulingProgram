@@ -3,6 +3,8 @@ import os
 import pandas as pd
 from datetime import datetime
 
+st.set_page_config(layout="wide")
+
 # Set the name of the template file
 template_file_name = "template/Curiculum.xlsx"
 
@@ -30,3 +32,12 @@ uploaded_file = st.file_uploader(
     accept_multiple_files=False,
     type=["xlsx","xls"]
 )
+
+if uploaded_file is not None:
+    with st.form("Upload"):
+        program_select, year_select = st.columns(2)
+        program_code = program_select.text_input("Program Code",help="e.g. ECE, CPE, EE, etc.",value=None,placeholder=st.session_state['program'])
+        batch_year = year_select.number_input("Batch Year", min_value=1900, value=2025, step=1)
+        if st.form_submit_button("Upload"):
+            st.success("File uploaded successfully!")
+            
