@@ -41,7 +41,18 @@ def initialize_db():
                     FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
                 )'''
             )
-            # cursor.execute()
+            cursor.execute(
+                '''CREATE TABLE IF NOT EXISTS courses (
+                    course_id INTEGER PRIMARY KEY,
+                    code TEXT NOT NULL UNIQUE,
+                    title TEXT NOT NULL,
+                    lec_hrs INTEGER NOT NULL,
+                    lab_hrs INTEGER NOT NULL,
+                    units INTEGER NOT NULL,
+                    deptartment_id INTEGER,
+                    FOREIGN KEY (deptartment_id) REFERENCES departments(department_id) ON DELETE SET NULL
+                )'''
+            )
             conn.commit()
         except sqlite3.OperationalError as e:
             conn.rollback()
@@ -199,5 +210,9 @@ def change_password_to_new(username,old_password,new_password):
             if "users.password" in str(e):
                 return {"status": False, "message": "Enter a UNIQUE password."}
             return {"status": False, "message": str(e)}
+
+#========================Upload Curriculum=========================
+
+
 
 #===========================Program Tree===========================
