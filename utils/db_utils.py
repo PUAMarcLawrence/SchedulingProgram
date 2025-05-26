@@ -42,17 +42,42 @@ def initialize_db():
                 )'''
             )
             cursor.execute(
+                '''CREATE TABLE IF NOT EXISTS curriculum (
+                    curriculum_id INTEGER PRIMARY KEY,
+                    program_year TEXT NOT NULL,
+                    program_id INTEGER NOT NULL,
+                    department_id INTEGER NOT NULL,
+                    FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE SET NULL,
+                    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
+                )'''
+            )
+            cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS subjects (
+                    curriculum_id INTEGER NOT NULL,
+                    year INTEGER NOT NULL,
+                    term INTEGER NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    pre_requisites TEXT,
+                    co_requisites TEXT,
+                    FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
+                    FOREIGN KEY (subject_id) REFERENCES courses(course_id) ON DELETE CASCADE
+
+                )'''
+            )
+            cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS courses (
                     course_id INTEGER PRIMARY KEY,
                     code TEXT NOT NULL UNIQUE,
                     title TEXT NOT NULL,
-                    lec_hrs INTEGER NOT NULL,
-                    lab_hrs INTEGER NOT NULL,
+                    lec_hrs INTEGER,
+                    lab_hrs INTEGER,
                     units INTEGER NOT NULL,
                     deptartment_id INTEGER,
                     FOREIGN KEY (deptartment_id) REFERENCES departments(department_id) ON DELETE SET NULL
                 )'''
             )
+            
+
             conn.commit()
         except sqlite3.OperationalError as e:
             conn.rollback()
@@ -212,7 +237,44 @@ def change_password_to_new(username,old_password,new_password):
             return {"status": False, "message": str(e)}
 
 #========================Upload Curriculum=========================
+def get_programs(department_name):
+    print(department_name)
 
+def upload_to_database(data,department_name,program_name,program_year):
+    with sqlite3.connect(university_db) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute('BEGIN TRANSACTION;')
+            for i in range(data.shape[0]):
+                if data.loc[i,'Care Taker'] is not None:
+                    cursor.execute(
+                        '''
+                        INSERT OR IGNORE INTO departments (department_name)
+                        VALUES (?)
+                        ''',
+                        (data.loc[i,'Care Taker'],)
+                    )
+                cursor.execute(
+                    '''
+                    INSERT OR IGNORE INTO courses (code, title, lec_hrs, lab_hrs, units, deptartment_id)
+                    VALUES (?, ?, ?, ?, ?, (SELECT department_id FROM departments WHERE department_name = ?))
+                    ''',
+                    (
+                        data.loc[i,'Code'].strip().upper(),
+                        data.loc[i,'Title'],
+                        data.loc[i,'Lec Hrs'],
+                        data.loc[i,'Lab Hrs'],
+                        int(data.loc[i,'Credit Units']),
+                        data.loc[i,'Care Taker'].strip().upper()
+                    )
+                )
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            print(f"Error uploading: {e}")
+    
+    print(data.shape[0])
+    print(data.loc[i])
+    
 
 
 #===========================Program Tree===========================

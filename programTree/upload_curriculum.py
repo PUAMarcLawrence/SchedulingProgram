@@ -2,9 +2,9 @@ import streamlit as st
 import os
 import pandas as pd
 from datetime import datetime
+from utils.db_utils import upload_to_database
 
 st.set_page_config(layout="wide")
-
 # Set the name of the template file
 template_file_name = "template/Curiculum.xlsx"
 
@@ -34,10 +34,37 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
+    try:
+        data = pd.read_excel(uploaded_file)
+        st.write("Editable preview of Excel data:")
+        st.warning(f"Please make sure that you double check the data before uploading. If YEAR, TERM, COURSE CODE are NONE/Blank would NOT be recorded", icon="⚠️")
+        Edited_data = st.data_editor(
+            data,
+            use_container_width=True,
+            height=len(data) * 35 + 70,
+            num_rows='dynamic'
+        )
+    except Exception as e:
+        st.error(f"Error reading Excel file: {e}")
     with st.form("Upload"):
+        st.subheader("Upload Curriculum to Database")
         program_select, year_select = st.columns(2)
         program_code = program_select.text_input("Program Code",help="e.g. ECE, CPE, EE, etc.",value=None,placeholder=st.session_state['program'])
+        if program_code:
+            program_code = program_code.replace(" ", "")
+            program_code = program_code.upper()
         batch_year = year_select.number_input("Batch Year", min_value=1900, value=2025, step=1)
+        program_batch = f"{program_code}_{str(batch_year)}"
+        print(program_batch)
+        program_chair = st.session_state['program']
+        print(program_chair)
         if st.form_submit_button("Upload"):
-            st.success("File uploaded successfully!")
+            if program_code and batch_year:
+                upload_result = upload_to_database(Edited_data, st.session_state['department'], program_chair, program_batch)
+                # if upload_result:
+                #     st.success("Curriculum uploaded successfully!")
+                # else:
+                #     st.error("Failed to upload the curriculum. Please check the file format and try again.")
+            else:
+                st.error("Enter a VALID program code and batch year")
             

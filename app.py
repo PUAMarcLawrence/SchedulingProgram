@@ -152,17 +152,19 @@ quick_view = st.Page(
     "programTree/quick_view.py",
     title="Quick View",
     icon=":material/account_tree:",
-    default=(role == "Dean"or role == "Subject Chair"),
+    
 )
 
 upload_curiculum = st.Page(
     "programTree/upload_curriculum.py",
     title="Upload Curiculum",
-    icon=":material/upload:")
+    icon=":material/upload:",
+    default=(role == "Dean"or role == "Subject Chair"),
+)
 
 account_pages = [logout_page, settings]
 admin_pages = [manage_users]
-program_tree_pages = [quick_view, upload_curiculum]
+program_tree_pages = [upload_curiculum,quick_view]
 
 # ========================== Main Program ===============================
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
@@ -187,4 +189,12 @@ else:
             pg = st.navigation([st.Page(general_registration,title="Register")])
 pg.run()
 if st.session_state['is_logged_in']:
-    st.sidebar.badge(f"[{st.session_state['department']} {st.session_state['role']}] {st.session_state['username']} ")
+    match st.session_state['role']:
+        case "Admin":
+            st.sidebar.badge(f"[{st.session_state['role']}] {st.session_state['username']} ")
+        case "Dean":
+            st.sidebar.badge(f"[{st.session_state['department']} {st.session_state['role']}] {st.session_state['username']} ")
+        case "Subject Chair":
+            st.sidebar.badge(f"[{st.session_state['program']} {st.session_state['role']}] {st.session_state['username']} ")
+        case _:
+            st.sidebar.badge(f"[{st.session_state['role']}] {st.session_state['username']} ")
