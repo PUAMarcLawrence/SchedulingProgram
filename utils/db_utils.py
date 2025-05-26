@@ -69,8 +69,8 @@ def initialize_db():
                     course_id INTEGER PRIMARY KEY,
                     code TEXT NOT NULL UNIQUE,
                     title TEXT NOT NULL,
-                    lec_hrs INTEGER,
-                    lab_hrs INTEGER,
+                    lec_hrs REAL,
+                    lab_hrs REAL,
                     units INTEGER NOT NULL,
                     deptartment_id INTEGER,
                     FOREIGN KEY (deptartment_id) REFERENCES departments(department_id) ON DELETE SET NULL
