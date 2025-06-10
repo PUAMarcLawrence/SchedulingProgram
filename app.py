@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from utils.db_utils import initialize_db, admin_registeration_check,create_user,get_departments,check_user
+from utils.db_utils import initialize_db, admin_registeration_check,create_user,get_departments,get_no_dean_departments,check_user
 
 if "role" not in st.session_state:
     st.session_state.role = None
@@ -81,7 +81,16 @@ def general_registration():
     role = st.selectbox("Select your role",["Dean","Subject Chair"],index=None,placeholder="Select a role")
     third, forth = st.columns(2,vertical_alignment="bottom")
     if role == "Dean":
-        department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.",placeholder="EECE")
+        department_found = forth.toggle("Not in the List?", value = False)
+        if department_found:
+            department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.")
+        else:
+            department = third.selectbox(
+                "Department",
+                get_no_dean_departments(),
+                index = None,
+                placeholder = "Select or Enter the your department",
+            )
         program = None
     elif role == "Subject Chair":
         department_found = forth.toggle("Not in the List?", value = False)
@@ -148,9 +157,9 @@ manage_users = st.Page(
     icon=":material/people:", 
     default=(role == "Admin"),)
 
-quick_view = st.Page(
-    "programTree/quick_view.py",
-    title="Quick View",
+curriculum_editor= st.Page(
+    "programTree/curriculum_editor.py",
+    title="Curriculum Editor",
     icon=":material/account_tree:",
     
 )
@@ -164,7 +173,7 @@ upload_curiculum = st.Page(
 
 account_pages = [logout_page, settings]
 admin_pages = [manage_users]
-program_tree_pages = [upload_curiculum,quick_view]
+program_tree_pages = [upload_curiculum,curriculum_editor]
 
 # ========================== Main Program ===============================
 st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")

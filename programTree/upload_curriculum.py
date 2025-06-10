@@ -36,8 +36,9 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     try:
         data = pd.read_excel(uploaded_file)
+        st.warning("Please make sure that you double check the data before uploading.")
+        st.warning("If YEAR, TERM, COURSE CODE are NONE/Blank would NOT be recorded", icon="⚠️")
         st.write("Editable preview of Excel data:")
-        st.warning(f"Please make sure that you double check the data before uploading. If YEAR, TERM, COURSE CODE are NONE/Blank would NOT be recorded", icon="⚠️")
         Edited_data = st.data_editor(
             data,
             use_container_width=True,
@@ -55,16 +56,14 @@ if uploaded_file is not None:
             program_code = program_code.upper()
         batch_year = year_select.number_input("Batch Year", min_value=1900, value=2025, step=1)
         program_batch = f"{program_code}_{str(batch_year)}"
-        print(program_batch)
-        program_chair = st.session_state['program']
-        print(program_chair)
         if st.form_submit_button("Upload"):
             if program_code and batch_year:
-                upload_result = upload_to_database(Edited_data, st.session_state['department'], program_chair, program_batch)
-                # if upload_result:
-                #     st.success("Curriculum uploaded successfully!")
-                # else:
-                #     st.error("Failed to upload the curriculum. Please check the file format and try again.")
+                upload_result = upload_to_database(Edited_data, st.session_state['department'], st.session_state['program'], program_batch)
+                if upload_result.get("status"):
+                    st.success(upload_result.get("message"))
+                else:
+                    st.error(upload_result.get("message"))
             else:
                 st.error("Enter a VALID program code and batch year")
+
             

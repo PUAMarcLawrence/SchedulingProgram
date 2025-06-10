@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import hashlib
+import pandas as pd
 
 db_path = './data'
 university_db = db_path +'/university.db'
@@ -44,24 +45,11 @@ def initialize_db():
             cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS curriculum (
                     curriculum_id INTEGER PRIMARY KEY,
-                    program_year TEXT NOT NULL,
+                    program_year TEXT NOT NULL UNIQUE,
                     program_id INTEGER NOT NULL,
                     department_id INTEGER NOT NULL,
                     FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE SET NULL,
                     FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
-                )'''
-            )
-            cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS subjects (
-                    curriculum_id INTEGER NOT NULL,
-                    year INTEGER NOT NULL,
-                    term INTEGER NOT NULL,
-                    subject_id TEXT NOT NULL,
-                    pre_requisites TEXT,
-                    co_requisites TEXT,
-                    FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
-                    FOREIGN KEY (subject_id) REFERENCES courses(course_id) ON DELETE CASCADE
-
                 )'''
             )
             cursor.execute(
@@ -76,8 +64,21 @@ def initialize_db():
                     FOREIGN KEY (deptartment_id) REFERENCES departments(department_id) ON DELETE SET NULL
                 )'''
             )
-            
+            cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS subjects (
+                    curriculum_id INTEGER NOT NULL,
+                    year INTEGER NOT NULL,
+                    term INTEGER NOT NULL,
+                    year_standing INTEGER,
+                    subject_id TEXT NOT NULL,
+                    pre_requisites TEXT,
+                    co_requisites TEXT,
+                    FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
+                    FOREIGN KEY (subject_id) REFERENCES courses(course_id) ON DELETE CASCADE
 
+                )'''
+            )
+            
             conn.commit()
         except sqlite3.OperationalError as e:
             conn.rollback()
@@ -168,6 +169,16 @@ def get_departments():
     except sqlite3.Error as e:
         return []
 
+def get_no_dean_departments():
+    try:
+        with sqlite3.connect(university_db) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT department_name FROM departments WHERE (dean_id is NULL)")
+            departments = [row[0] for row in cursor.fetchall()]
+        return departments
+    except sqlite3.Error as e:
+        return []
+
 def check_user(username,password):
     with sqlite3.connect(university_db) as conn:
         cursor = conn.execute(
@@ -237,14 +248,33 @@ def change_password_to_new(username,old_password,new_password):
             return {"status": False, "message": str(e)}
 
 #========================Upload Curriculum=========================
-def get_programs(department_name):
-    print(department_name)
+
+def subjects_to_IDs(cursor,pre_requisites):
+    subjects = [s.strip().upper() for s in pre_requisites.split(',')]
+    placeholders = ', '.join('?' for _ in subjects)
+    cursor.execute(
+        f'''
+        SELECT course_id FROM courses WHERE code IN ({placeholders})
+        ''',
+        subjects
+    )
+    numbered_subjects = [f'{item[0]}' for item in cursor.fetchall()]
+    return ', '.join(numbered_subjects)
 
 def upload_to_database(data,department_name,program_name,program_year):
     with sqlite3.connect(university_db) as conn:
         cursor = conn.cursor()
         try:
             cursor.execute('BEGIN TRANSACTION;')
+            cursor.execute(
+                '''
+                INSERT OR IGNORE INTO curriculum (program_year,program_id,department_id)
+                VALUES (?,(SELECT program_id FROM programs WHERE program_name = ?),(SELECT department_id FROM departments WHERE department_name = ?))
+                ''',
+                (program_year,program_name,department_name)
+            )
+            if cursor.rowcount == 0:
+                raise sqlite3.IntegrityError("Curriculum already exists")
             for i in range(data.shape[0]):
                 if data.loc[i,'Care Taker'] is not None:
                     cursor.execute(
@@ -252,7 +282,7 @@ def upload_to_database(data,department_name,program_name,program_year):
                         INSERT OR IGNORE INTO departments (department_name)
                         VALUES (?)
                         ''',
-                        (data.loc[i,'Care Taker'],)
+                        (data.loc[i,'Care Taker'].replace(" ",""),)
                     )
                 cursor.execute(
                     '''
@@ -260,7 +290,7 @@ def upload_to_database(data,department_name,program_name,program_year):
                     VALUES (?, ?, ?, ?, ?, (SELECT department_id FROM departments WHERE department_name = ?))
                     ''',
                     (
-                        data.loc[i,'Code'].strip().upper(),
+                        data.loc[i,'Code'].strip().upper().replace(" ",""),
                         data.loc[i,'Title'],
                         data.loc[i,'Lec Hrs'],
                         data.loc[i,'Lab Hrs'],
@@ -268,13 +298,58 @@ def upload_to_database(data,department_name,program_name,program_year):
                         data.loc[i,'Care Taker'].strip().upper()
                     )
                 )
+                
+                cursor.execute(
+                    '''
+                    INSERT OR IGNORE INTO subjects (curriculum_id, year, term, year_standing, subject_id, pre_requisites, co_requisites)
+                    VALUES ((SELECT curriculum_id FROM curriculum WHERE program_year = ?), ?, ?, ?, (SELECT course_id FROM courses WHERE code = ?), ?, ?)
+                    ''',
+                    (
+                        program_year,  # curriculum_id from the last insert
+                        int(data.loc[i,'Year']),
+                        int(data.loc[i,'Term']),
+                        int(data.loc[i,'Req_Year_Standing']) if pd.notna(data.loc[i,'Req_Year_Standing']) else None,
+                        data.loc[i,'Code'].strip().upper().replace(" ",""),
+                        subjects_to_IDs(cursor,data.loc[i,'Pre_requisites']) if pd.notna(data.loc[i,'Pre_requisites']) else None,
+                        subjects_to_IDs(cursor,data.loc[i,'Co_requisites']) if pd.notna(data.loc[i,'Co_requisites']) else None
+                    )
+                )
+            conn.commit()
+            return {"status": True, "message": f"Curriculum uploaded successfully."}
         except sqlite3.IntegrityError as e:
             conn.rollback()
-            print(f"Error uploading: {e}")
-    
-    print(data.shape[0])
-    print(data.loc[i])
-    
+            return {"status": False, "message": f"Error1: {e}"}
 
+#===========================Curriculum Editor===========================
+def get_department_curriculum_list(department):
+    with sqlite3.connect(university_db) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            SELECT program_year FROM curriculum
+            WHERE department_id = (SELECT department_id FROM departments WHERE department_name = ?)
+            ''',
+            (department,)
+        )
+        curriculum_list = [row[0] for row in cursor.fetchall()]
+    return curriculum_list
 
-#===========================Program Tree===========================
+def get_curriculum_data(program,department,program_year):
+    with sqlite3.connect(university_db) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            SELECT subjects.year, subjects.term, subjects.year_standing, courses.code, courses.title, 
+                   courses.lec_hrs, courses.lab_hrs, courses.units, subjects.pre_requisites, subjects.co_requisites
+            FROM curriculum
+            JOIN subjects ON curriculum.curriculum_id = subjects.curriculum_id
+            JOIN courses ON courses.course_id = subjects.subject_id =
+            WHERE curriculum.program_year = ?
+            ''',
+            (program_year,)
+        )
+        data = cursor.fetchall()
+    return pd.DataFrame(data, columns=[
+        'Year', 'Term', 'Req_Year_Standing', 'Code', 'Title', 
+        'Lec Hrs', 'Lab Hrs', 'Credit Units', 'Pre_requisites', 'Co_requisites'
+    ])
