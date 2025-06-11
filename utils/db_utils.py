@@ -60,8 +60,8 @@ def initialize_db():
                     lec_hrs REAL,
                     lab_hrs REAL,
                     units INTEGER NOT NULL,
-                    deptartment_id INTEGER,
-                    FOREIGN KEY (deptartment_id) REFERENCES departments(department_id) ON DELETE SET NULL
+                    department_id INTEGER,
+                    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
                 )'''
             )
             cursor.execute(
@@ -286,7 +286,7 @@ def upload_to_database(data,department_name,program_name,program_year):
                     )
                 cursor.execute(
                     '''
-                    INSERT OR IGNORE INTO courses (code, title, lec_hrs, lab_hrs, units, deptartment_id)
+                    INSERT OR IGNORE INTO courses (code, title, lec_hrs, lab_hrs, units, department_id)
                     VALUES (?, ?, ?, ?, ?, (SELECT department_id FROM departments WHERE department_name = ?))
                     ''',
                     (
@@ -295,7 +295,7 @@ def upload_to_database(data,department_name,program_name,program_year):
                         data.loc[i,'Lec Hrs'],
                         data.loc[i,'Lab Hrs'],
                         int(data.loc[i,'Credit Units']),
-                        data.loc[i,'Care Taker'].strip().upper()
+                        data.loc[i,'Care Taker'].strip().upper().replace(" ",""),
                     )
                 )
                 
@@ -334,22 +334,36 @@ def get_department_curriculum_list(department):
         curriculum_list = [row[0] for row in cursor.fetchall()]
     return curriculum_list
 
+def IDs_to_subjects(cursor, pre_requisites):
+    if pre_requisites is None or pre_requisites == '':
+        return ''
+    ids = [s.strip() for s in pre_requisites.split(',')]
+    placeholders = ', '.join('?' for _ in ids)
+    cursor.execute(
+        f'''
+        SELECT code FROM courses WHERE course_id IN ({placeholders})
+        ''',
+        ids
+    )
+    subjects = [item[0] for item in cursor.fetchall()]
+    return ', '.join(subjects)
+
 def get_curriculum_data(program,department,program_year):
     with sqlite3.connect(university_db) as conn:
         cursor = conn.cursor()
         cursor.execute(
             '''
             SELECT subjects.year, subjects.term, subjects.year_standing, courses.code, courses.title, 
-                   courses.lec_hrs, courses.lab_hrs, courses.units, subjects.pre_requisites, subjects.co_requisites
+                   courses.lec_hrs, courses.lab_hrs, courses.units, subjects.pre_requisites, subjects.co_requisites, courses.department_id
             FROM curriculum
             JOIN subjects ON curriculum.curriculum_id = subjects.curriculum_id
-            JOIN courses ON courses.course_id = subjects.subject_id =
+            JOIN courses ON courses.course_id = subjects.subject_id
             WHERE curriculum.program_year = ?
             ''',
             (program_year,)
         )
         data = cursor.fetchall()
     return pd.DataFrame(data, columns=[
-        'Year', 'Term', 'Req_Year_Standing', 'Code', 'Title', 
-        'Lec Hrs', 'Lab Hrs', 'Credit Units', 'Pre_requisites', 'Co_requisites'
+        'Year', 'Term', 'R.Y.S.', 'Code', 'Title', 
+        'Lec Hrs', 'Lab Hrs', 'Credit Units', 'Pre_requisites', 'Co_requisites', 'Care Taker'
     ])

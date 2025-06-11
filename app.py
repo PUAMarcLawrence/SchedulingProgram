@@ -120,7 +120,7 @@ def general_registration():
                 if program != None:
                     program = program.upper()
                 with st.spinner("Registering..."):
-                    reg_result = create_user(username,password,role,department,program,color)
+                    reg_result = create_user(username.strip(),password.strip(),role,department,program,color)
                     if reg_result.get("status"):
                         st.success(reg_result.get("message"))
                         time.sleep(2)
