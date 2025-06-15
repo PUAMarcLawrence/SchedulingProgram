@@ -52,8 +52,7 @@ if uploaded_file is not None:
         program_select, year_select = st.columns(2)
         program_code = program_select.text_input("Program Code",help="e.g. ECE, CPE, EE, etc.",value=None,placeholder=st.session_state['program'])
         if program_code:
-            program_code = program_code.replace(" ", "")
-            program_code = program_code.upper()
+            program_code = program_code.upper().replace(" ", "")
         batch_year = year_select.number_input("Batch Year", min_value=1900, value=2025, step=1)
         program_batch = f"{program_code}_{str(batch_year)}"
         if st.form_submit_button("Upload"):

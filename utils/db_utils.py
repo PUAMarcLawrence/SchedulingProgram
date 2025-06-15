@@ -250,7 +250,7 @@ def change_password_to_new(username,old_password,new_password):
 #========================Upload Curriculum=========================
 
 def subjects_to_IDs(cursor,pre_requisites):
-    subjects = [s.strip().upper() for s in pre_requisites.split(',')]
+    subjects = [s.strip().upper().replace(" ","") for s in pre_requisites.split(',')]
     placeholders = ', '.join('?' for _ in subjects)
     cursor.execute(
         f'''
@@ -258,7 +258,7 @@ def subjects_to_IDs(cursor,pre_requisites):
         ''',
         subjects
     )
-    numbered_subjects = [f'{item[0]}' for item in cursor.fetchall()]
+    numbered_subjects = [item[0] for item in cursor.fetchall()]
     return ', '.join(numbered_subjects)
 
 def upload_to_database(data,department_name,program_name,program_year):
@@ -336,7 +336,7 @@ def get_department_curriculum_list(department):
 
 def IDs_to_subjects(cursor, pre_requisites):
     if pre_requisites is None or pre_requisites == '':
-        return ''
+        return None
     ids = [s.strip() for s in pre_requisites.split(',')]
     placeholders = ', '.join('?' for _ in ids)
     cursor.execute(
@@ -348,6 +348,13 @@ def IDs_to_subjects(cursor, pre_requisites):
     subjects = [item[0] for item in cursor.fetchall()]
     return ', '.join(subjects)
 
+def ID_to_department(cursor, department_id):
+    try:
+        cursor.execute("SELECT department_name FROM departments WHERE department_id = ?", (department_id,))
+        department_name = cursor.fetchone()
+        return department_name[0]
+    except sqlite3.Error as e:
+        raise sqlite3.Error(f"Error fetching departments: {e}")
 def get_curriculum_data(program,department,program_year):
     with sqlite3.connect(university_db) as conn:
         cursor = conn.cursor()
@@ -362,7 +369,7 @@ def get_curriculum_data(program,department,program_year):
             ''',
             (program_year,)
         )
-        data = cursor.fetchall()
+        data = [(year,term, year_standing, code, title, lec_hrs, lab_hrs, units, IDs_to_subjects(cursor,pre_requisites), IDs_to_subjects(cursor,co_requisites), ID_to_department(cursor,care_taker)) for year, term, year_standing, code, title, lec_hrs, lab_hrs, units, pre_requisites, co_requisites, care_taker in cursor.fetchall()]
     return pd.DataFrame(data, columns=[
         'Year', 'Term', 'R.Y.S.', 'Code', 'Title', 
         'Lec Hrs', 'Lab Hrs', 'Credit Units', 'Pre_requisites', 'Co_requisites', 'Care Taker'

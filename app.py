@@ -144,6 +144,7 @@ def logout():
                         'department': None,
                         'program': None,
                     })
+    st.cache_data.clear()
     st.rerun()
 
 role = st.session_state.role
