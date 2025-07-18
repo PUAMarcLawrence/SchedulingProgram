@@ -3,9 +3,10 @@ import pandas as pd
 from pyvis.network import Network
 from utils.db_utils import get_department_curriculum_list,get_curriculum_data
 
-def build_interactive_subject_graph():
+def build_interactive_subject_graph(data):
     net = Network(height="100%", width="100%", bgcolor="#222222", font_color="white")
-
+    
+    
     return net
 
 st.set_page_config(layout="wide", page_icon=":material/account_tree:")
@@ -33,13 +34,18 @@ edited_data = st.data_editor(
     column_config={
         "Year": st.column_config.NumberColumn("Year", help="Year of the course"),
         "Term": st.column_config.NumberColumn("Term", help="Term of the course"),
-        "Code": st.column_config.TextColumn("Course Code", help="Code of the course"),
+        "R.Y.S.": st.column_config.NumberColumn("R.Y.S.", help="Required Year Standing."),
+        "Code": st.column_config.TextColumn("Code", help="Code of the course"),
         "Title": st.column_config.TextColumn("Course Name", help="Name of the course"),
+        "Lec Hrs": st.column_config.NumberColumn("Lec Hrs", help="Lecture Hours"),
+        "Lab Hrs": st.column_config.NumberColumn("Lab Hrs", help="Laboratory Hours"),
         "Credit Units": st.column_config.NumberColumn("Units", help="Credits for the course"),
+        "Pre_requisites": st.column_config.ListColumn("Pre-requisites", help="Pre-requisites for the course",width="medium"),
+        "Co_requisites": st.column_config.ListColumn("Co-requisites", help="Co-requisites for the course",width="medium"),
     },
     disabled=st.session_state["edit_mode"],
     use_container_width=True,
     hide_index=True,
-)
+    )
 with container:
-    st.components.v1.html(build_interactive_subject_graph().generate_html())
+    st.components.v1.html(build_interactive_subject_graph(edited_data).generate_html())

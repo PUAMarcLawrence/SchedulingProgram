@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import pandas as pd
-from datetime import datetime
 from utils.db_utils import upload_to_database
 
 st.set_page_config(layout="wide")
