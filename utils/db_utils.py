@@ -207,38 +207,25 @@ def get_no_dean_departments():
 def check_user(username,password):
     hashed_pw = hash_password(password)
     with sqlite3.connect(university_db) as conn:
-        cursor = conn.execute(
-            '''
-            SELECT role FROM users
-            WHERE username = ? AND password = ?
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT
+                users.user_id,
+                users.username,
+                users.role,
+                users.color,
+                departments.department_name,
+                programs.program_name
+            FROM users
+            LEFT JOIN programs ON users.user_id = programs.chair_id
+            LEFT JOIN departments ON 
+                (users.role = 'Subject Chair' AND programs.department_id = departments.department_id) 
+                OR (users.role != 'Subject Chair' AND users.user_id = departments.dean_id)
+            WHERE users.username = ? AND users.password = ?
             ''',
             (username, hashed_pw,)
         )
-        role = cursor.fetchone()
-        if role:
-            if role[0] == 'Subject Chair':
-                cursor = conn.execute(
-                    '''
-                    SELECT user_id, username, role, color, department_name, program_name FROM users
-                    INNER JOIN departments ON programs.department_id = departments.department_id
-                    LEFT JOIN programs ON users.user_id = programs.chair_id
-                    WHERE username = ? AND password = ?
-                    ''',
-                    (username, hashed_pw,)
-                )
-            else:
-                cursor = conn.execute(
-                    '''
-                    SELECT user_id, username, role, color, department_name, program_name FROM users
-                    LEFT JOIN departments ON users.user_id = departments.dean_id
-                    LEFT JOIN programs ON users.user_id = programs.chair_id
-                    WHERE username = ? AND password = ?
-                    ''',
-                    (username, hashed_pw,)
-                )
-            return cursor.fetchone()
-        else:
-            return None
+        return cursor.fetchone()
 
 def change_password_to_new(username,old_password,new_password):
     with sqlite3.connect(university_db) as conn:
