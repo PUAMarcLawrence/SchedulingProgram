@@ -10,79 +10,94 @@ university_db = db_path +'/university.db'
 def initialize_db():
     if not os.path.exists(db_path):
         os.makedirs(db_path)
-    with sqlite3.connect(university_db) as conn:
-        cursor = conn.cursor()
-        try:
-            cursor.execute('BEGIN TRANSACTION;')
-            cursor.execute('PRAGMA foreign_keys = ON;')
-            cursor.execute(
-                '''CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
-                    username TEXT NOT NULL UNIQUE,
-                    password TEXT NOT NULL UNIQUE,
-                    role TEXT NOT NULL,
-                    color TEXT NOT NULL UNIQUE
-                )'''
-            )
-            cursor.execute(
-                '''CREATE TABLE IF NOT EXISTS departments (
-                    department_id INTEGER PRIMARY KEY,
-                    department_name TEXT NOT NULL UNIQUE,
-                    dean_id INTEGER UNIQUE,
-                    FOREIGN KEY (dean_id) REFERENCES users(user_id) ON DELETE SET NULL
-                )'''
-            )
-            cursor.execute(
-                '''CREATE TABLE IF NOT EXISTS programs (
-                    program_id INTEGER PRIMARY KEY,
-                    program_name TEXT NOT NULL UNIQUE,
-                    chair_id INTEGER UNIQUE,
-                    department_id INTEGER NOT NULL,
-                    FOREIGN KEY (chair_id) REFERENCES users(user_id) ON DELETE SET NULL,
-                    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
-                )'''
-            )
-            cursor.execute(
-                '''CREATE TABLE IF NOT EXISTS curriculum (
-                    curriculum_id INTEGER PRIMARY KEY,
-                    program_year TEXT NOT NULL UNIQUE,
-                    program_id INTEGER NOT NULL,
-                    department_id INTEGER NOT NULL,
-                    FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE SET NULL,
-                    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
-                )'''
-            )
-            cursor.execute(
-                '''CREATE TABLE IF NOT EXISTS courses (
-                    course_id INTEGER PRIMARY KEY,
-                    code TEXT NOT NULL UNIQUE,
-                    title TEXT NOT NULL,
-                    lec_hrs REAL,
-                    lab_hrs REAL,
-                    units INTEGER NOT NULL,
-                    department_id INTEGER,
-                    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
-                )'''
-            )
-            cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS subjects (
-                    curriculum_id INTEGER NOT NULL,
-                    year INTEGER NOT NULL,
-                    term INTEGER NOT NULL,
-                    year_standing INTEGER,
-                    subject_id TEXT NOT NULL,
-                    pre_requisites TEXT,
-                    co_requisites TEXT,
-                    FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
-                    FOREIGN KEY (subject_id) REFERENCES courses(course_id) ON DELETE CASCADE
 
-                )'''
-            )
-            
+    schema_statements = [
+        '''PRAGMA foreign_keys = ON;''',
+
+        '''CREATE TABLE IF NOT EXISTS users (
+            user_id INTEGER PRIMARY KEY, 
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            color TEXT NOT NULL UNIQUE
+        );''',
+
+        '''CREATE TABLE IF NOT EXISTS departments (
+            department_id INTEGER PRIMARY KEY,
+            department_name TEXT NOT NULL UNIQUE,
+            dean_id INTEGER UNIQUE,
+            FOREIGN KEY (dean_id) REFERENCES users(user_id) ON DELETE SET NULL
+        );''',
+
+        '''CREATE TABLE IF NOT EXISTS programs (
+            program_id INTEGER PRIMARY KEY,
+            program_name TEXT NOT NULL UNIQUE,
+            chair_id INTEGER UNIQUE,
+            department_id INTEGER NOT NULL,
+            FOREIGN KEY (chair_id) REFERENCES users(user_id) ON DELETE SET NULL,
+            FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
+        );''',
+
+        '''CREATE TABLE IF NOT EXISTS curriculum (
+            curriculum_id INTEGER PRIMARY KEY,
+            curriculum_name TEXT NOT NULL UNIQUE,
+            program_id INTEGER NOT NULL,
+            department_id INTEGER NOT NULL,
+            FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE SET NULL,
+            FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
+        );''',
+
+        '''CREATE TABLE IF NOT EXISTS course (
+            course_id INTEGER PRIMARY KEY,
+            course_code TEXT NOT NULL UNIQUE,
+            title TEXT NOT NULL,
+            lec_hrs REAL,
+            lab_hrs REAL,
+            units INTEGER NOT NULL,
+            department_id INTEGER,
+            FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
+        );''',
+
+        '''CREATE TABLE IF NOT EXISTS curriculum_course (
+            curriculum_id INTEGER NOT NULL,
+            course_id INTEGER NOT NULL,
+            year INTEGER NOT NULL,
+            term INTEGER NOT NULL,
+            year_standing INTEGER,
+            PRIMARY KEY (curriculum_id, course_id),
+            FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
+            FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE
+        );''',
+
+        '''CREATE TABLE IF NOT EXISTS course_prerequisite (
+            curriculum_id INTEGER NOT NULL,
+            course_id INTEGER NOT NULL,
+            prerequisite_course_id INTEGER NOT NULL,
+            PRIMARY KEY (curriculum_id, course_id, prerequisite_course_id),
+            FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
+            FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE,
+            FOREIGN KEY (prerequisite_course_id) REFERENCES course(course_id) ON DELETE CASCADE
+        );''',
+
+        ''' CREATE TABLE IF NOT EXISTS course_corequisite (
+            curriculum_id INTEGER NOT NULL,
+            course_id INTEGER NOT NULL,
+            corequisite_course_id INTEGER NOT NULL,
+            PRIMARY KEY (curriculum_id, course_id, corequisite_course_id),
+            FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
+            FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE,
+            FOREIGN KEY (corequisite_course_id) REFERENCES course(course_id) ON DELETE CASCADE
+        );''',
+    ]
+
+    try:
+        with sqlite3.connect(university_db) as conn:
+            cursor = conn.cursor()
+            for stmt in schema_statements:
+                cursor.execute(stmt)
             conn.commit()
-        except sqlite3.OperationalError as e:
-            conn.rollback()
-            print(f"Error creating tables: {e}")
+    except sqlite3.OperationalError as e:
+        print(f"Database initialization error: {e}")
 
 def admin_registeration_check():
     with sqlite3.connect(university_db) as conn:
@@ -103,9 +118,13 @@ def create_user(username,password,role,department,program,color):
                 '''
                 INSERT INTO users (username, password, role, color) 
                 VALUES (?, ?, ?, ?)
+                RETURNING user_id
+
                 ''',
                 (username, hash_password(password), role, color,)
             )
+            user_id = cursor.fetchone()[0]
+            
             if department is not None:
                 cursor.execute(
                     '''
@@ -114,41 +133,47 @@ def create_user(username,password,role,department,program,color):
                     ''',
                     (department,)
                 )
-            if role == "Dean":
                 cursor.execute(
                     '''
-                    UPDATE departments
-                    SET dean_id = (SELECT user_id FROM users WHERE username = ?)
-                    WHERE department_name = ? AND (dean_id IS NULL)
+                    SELECT department_id FROM departments WHERE department_name = ?
                     ''',
-                    (username, department,)
+                    (department,)
                 )
-                if cursor.rowcount == 0:
-                    raise sqlite3.IntegrityError("Department already has a dean.")
-            if program is not None:
-                cursor.execute(
-                    '''
-                    INSERT OR IGNORE INTO programs (program_name, department_id)
-                    VALUES (?, (SELECT department_id FROM departments WHERE department_name = ?))
-                    ''',
-                    (program, department,)
-                )
-            if role == "Subject Chair":
-                cursor.execute(
-                    '''
-                    UPDATE programs
-                    SET chair_id = (SELECT user_id FROM users WHERE username = ?)
-                    WHERE program_name = ? AND (chair_id IS NULL)
-                    ''',
-                    (username, program,)
-                )
-                if cursor.rowcount == 0:
-                    raise sqlite3.IntegrityError("Program already has a chair person.")
+                department_id = cursor.fetchone()[0]
+            
+            match role:
+                case "Dean":
+                    cursor.execute(
+                        '''
+                        UPDATE departments
+                        SET dean_id = ?
+                        WHERE department_id = ? AND (dean_id IS NULL)
+                        ''',
+                        (user_id, department_id,)
+                    )
+                    if cursor.rowcount == 0:
+                        raise sqlite3.IntegrityError("Department already has a dean.")
+                case "Subject Chair":
+                    if program is not None:
+                        cursor.execute(
+                            '''
+                            INSERT OR IGNORE INTO programs (program_name, department_id)
+                            VALUES (?, ?)
+                            ''',
+                            (program, department_id,)
+                        )
+                    cursor.execute(
+                        '''
+                        UPDATE programs
+                        SET chair_id = ?
+                        WHERE program_name = ? AND (chair_id IS NULL)
+                        ''',
+                        (user_id, program,)
+                    )
+                    if cursor.rowcount == 0:
+                        raise sqlite3.IntegrityError("Program already has a chair person.")
             conn.commit()
-            if role == "Admin":
-                return {"status": True, "message": f"Admin {username} created successfully."}
-            else:
-                return {"status": True, "message": f"{role} {username} created successfully."}
+            return {"status": True, "message": f"{role} {username} created successfully."}
         except sqlite3.IntegrityError as e:
             conn.rollback()
             if "users.color" in str(e):
@@ -180,13 +205,14 @@ def get_no_dean_departments():
         return []
 
 def check_user(username,password):
+    hashed_pw = hash_password(password)
     with sqlite3.connect(university_db) as conn:
         cursor = conn.execute(
             '''
             SELECT role FROM users
             WHERE username = ? AND password = ?
             ''',
-            (username, hash_password(password),)
+            (username, hashed_pw,)
         )
         role = cursor.fetchone()
         if role:
@@ -198,7 +224,7 @@ def check_user(username,password):
                     LEFT JOIN programs ON users.user_id = programs.chair_id
                     WHERE username = ? AND password = ?
                     ''',
-                    (username, hash_password(password),)
+                    (username, hashed_pw,)
                 )
             else:
                 cursor = conn.execute(
@@ -208,7 +234,7 @@ def check_user(username,password):
                     LEFT JOIN programs ON users.user_id = programs.chair_id
                     WHERE username = ? AND password = ?
                     ''',
-                    (username, hash_password(password),)
+                    (username, hashed_pw,)
                 )
             return cursor.fetchone()
         else:
@@ -247,130 +273,3 @@ def change_password_to_new(username,old_password,new_password):
                 return {"status": False, "message": "Enter a UNIQUE password."}
             return {"status": False, "message": str(e)}
 
-#========================Upload Curriculum=========================
-
-def subjects_to_IDs(cursor,pre_requisites):
-    subjects = [s.strip().upper().replace(" ","") for s in pre_requisites.split(',')]
-    placeholders = ', '.join('?' for _ in subjects)
-    cursor.execute(
-        f'''
-        SELECT course_id FROM courses WHERE code IN ({placeholders})
-        ''',
-        subjects
-    )
-    numbered_subjects = [item[0] for item in cursor.fetchall()]
-    return ', '.join(numbered_subjects)
-
-def upload_to_database(data,department_name,program_name,program_year):
-    with sqlite3.connect(university_db) as conn:
-        cursor = conn.cursor()
-        try:
-            cursor.execute('BEGIN TRANSACTION;')
-            cursor.execute(
-                '''
-                INSERT OR IGNORE INTO curriculum (program_year,program_id,department_id)
-                VALUES (?,(SELECT program_id FROM programs WHERE program_name = ?),(SELECT department_id FROM departments WHERE department_name = ?))
-                ''',
-                (program_year,program_name,department_name)
-            )
-            if cursor.rowcount == 0:
-                raise sqlite3.IntegrityError("Curriculum already exists")
-            for i in range(data.shape[0]):
-                if data.loc[i,'Care Taker'] is not None:
-                    cursor.execute(
-                        '''
-                        INSERT OR IGNORE INTO departments (department_name)
-                        VALUES (?)
-                        ''',
-                        (data.loc[i,'Care Taker'].replace(" ",""),)
-                    )
-                cursor.execute(
-                    '''
-                    INSERT OR IGNORE INTO courses (code, title, lec_hrs, lab_hrs, units, department_id)
-                    VALUES (?, ?, ?, ?, ?, (SELECT department_id FROM departments WHERE department_name = ?))
-                    ''',
-                    (
-                        data.loc[i,'Code'].strip().upper().replace(" ",""),
-                        data.loc[i,'Title'],
-                        data.loc[i,'Lec Hrs'],
-                        data.loc[i,'Lab Hrs'],
-                        int(data.loc[i,'Credit Units']),
-                        data.loc[i,'Care Taker'].strip().upper().replace(" ",""),
-                    )
-                )
-                
-                cursor.execute(
-                    '''
-                    INSERT OR IGNORE INTO subjects (curriculum_id, year, term, year_standing, subject_id, pre_requisites, co_requisites)
-                    VALUES ((SELECT curriculum_id FROM curriculum WHERE program_year = ?), ?, ?, ?, (SELECT course_id FROM courses WHERE code = ?), ?, ?)
-                    ''',
-                    (
-                        program_year,  # curriculum_id from the last insert
-                        int(data.loc[i,'Year']),
-                        int(data.loc[i,'Term']),
-                        int(data.loc[i,'Req_Year_Standing']) if pd.notna(data.loc[i,'Req_Year_Standing']) else None,
-                        data.loc[i,'Code'].strip().upper().replace(" ",""),
-                        subjects_to_IDs(cursor,data.loc[i,'Pre_requisites']) if pd.notna(data.loc[i,'Pre_requisites']) else None,
-                        subjects_to_IDs(cursor,data.loc[i,'Co_requisites']) if pd.notna(data.loc[i,'Co_requisites']) else None
-                    )
-                )
-            conn.commit()
-            return {"status": True, "message": f"Curriculum uploaded successfully."}
-        except sqlite3.IntegrityError as e:
-            conn.rollback()
-            return {"status": False, "message": f"Error1: {e}"}
-
-#===========================Curriculum Editor===========================
-def get_department_curriculum_list(department):
-    with sqlite3.connect(university_db) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            '''
-            SELECT program_year FROM curriculum
-            WHERE department_id = (SELECT department_id FROM departments WHERE department_name = ?)
-            ''',
-            (department,)
-        )
-        curriculum_list = [row[0] for row in cursor.fetchall()]
-    return curriculum_list
-
-def IDs_to_subjects(cursor, pre_requisites):
-    if pre_requisites is None or pre_requisites == '':
-        return None
-    ids = [s.strip() for s in pre_requisites.split(',')]
-    placeholders = ', '.join('?' for _ in ids)
-    cursor.execute(
-        f'''
-        SELECT code FROM courses WHERE course_id IN ({placeholders})
-        ''',
-        ids
-    )
-    subjects = [item[0] for item in cursor.fetchall()]
-    return ', '.join(subjects)
-
-def ID_to_department(cursor, department_id):
-    try:
-        cursor.execute("SELECT department_name FROM departments WHERE department_id = ?", (department_id,))
-        department_name = cursor.fetchone()
-        return department_name[0]
-    except sqlite3.Error as e:
-        raise sqlite3.Error(f"Error fetching departments: {e}")
-def get_curriculum_data(program,department,program_year):
-    with sqlite3.connect(university_db) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            '''
-            SELECT subjects.year, subjects.term, subjects.year_standing, courses.code, courses.title, 
-                   courses.lec_hrs, courses.lab_hrs, courses.units, subjects.pre_requisites, subjects.co_requisites, courses.department_id
-            FROM curriculum
-            JOIN subjects ON curriculum.curriculum_id = subjects.curriculum_id
-            JOIN courses ON courses.course_id = subjects.subject_id
-            WHERE curriculum.program_year = ?
-            ''',
-            (program_year,)
-        )
-        data = [(year,term, year_standing, code, title, lec_hrs, lab_hrs, units, IDs_to_subjects(cursor,pre_requisites), IDs_to_subjects(cursor,co_requisites), ID_to_department(cursor,care_taker)) for year, term, year_standing, code, title, lec_hrs, lab_hrs, units, pre_requisites, co_requisites, care_taker in cursor.fetchall()]
-    return pd.DataFrame(data, columns=[
-        'Year', 'Term', 'R.Y.S.', 'Code', 'Title', 
-        'Lec Hrs', 'Lab Hrs', 'Credit Units', 'Pre_requisites', 'Co_requisites', 'Care Taker'
-    ])

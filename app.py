@@ -1,11 +1,11 @@
 import streamlit as st
 import time
-from utils.db_utils import initialize_db, admin_registeration_check,create_user,get_departments,get_no_dean_departments,check_user
+from utils.db_utils import initialize_db, admin_registeration_check, create_user, check_user, get_departments, get_no_dean_departments
 
 if "role" not in st.session_state:
-    st.session_state.role = None
+    st.session_state["role"] = None
 if "is_logged_in" not in st.session_state:
-    st.session_state.is_logged_in = False
+    st.session_state["is_logged_in"] = False
 if "is_page_login" not in st.session_state:
     st.session_state.is_page_login = True
 
@@ -80,34 +80,35 @@ def general_registration():
     confirm_password = second.text_input("Confirm Password", type="password")
     role = st.selectbox("Select your role",["Dean","Subject Chair"],index=None,placeholder="Select a role")
     third, forth = st.columns(2,vertical_alignment="bottom")
-    if role == "Dean":
-        department_found = forth.toggle("Not in the List?", value = False)
-        if department_found:
-            department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.")
-        else:
-            department = third.selectbox(
-                "Department",
-                get_no_dean_departments(),
-                index = None,
-                placeholder = "Select or Enter the your department",
-            )
-        program = None
-    elif role == "Subject Chair":
-        department_found = forth.toggle("Not in the List?", value = False)
-        if department_found:
-            department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.")
-        else:
-            department = third.selectbox(
-                "Department",
-                get_departments(),
-                index = None,
-                placeholder = "Select or Enter the your department",
-            )
-        program = st.text_input(
-            "Program",
-            value = None,
-            help="e.g. CPE,ECE,EE etc.",
-            )
+    match role:
+        case "Dean":
+            department_found = forth.toggle("Not in the List?", value = False)
+            if department_found:
+                department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.")
+            else:
+                department = third.selectbox(
+                    "Department",
+                    get_no_dean_departments(),
+                    index = None,
+                    placeholder = "Select or Enter the your department",
+                )
+            program = None
+        case "Subject Chair":
+            department_found = forth.toggle("Not in the List?", value = False)
+            if department_found:
+                department = third.text_input("Department", value = None, help="e.g. EECE, CEGE, CBMES, etc.")
+            else:
+                department = third.selectbox(
+                    "Department",
+                    get_departments(),
+                    index = None,
+                    placeholder = "Select or Enter the your department",
+                )
+            program = st.text_input(
+                "Program",
+                value = None,
+                help="e.g. CPE,ECE,EE etc.",
+                )
     if role != None:
         color = st.color_picker("Pick a color to represent your account")
     if st.button("Register",disabled=role is None):
@@ -147,26 +148,24 @@ def logout():
     st.cache_data.clear()
     st.rerun()
 
-role = st.session_state.role
+role = st.session_state["role"]
 
 logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
+
 
 manage_users = st.Page(
     "admin/manage_users.py", 
     title="Manage Users", 
     icon=":material/people:", 
     default=(role == "Admin"),)
-
 curriculum_editor= st.Page(
     "programTree/curriculum_editor.py",
     title="Curriculum Editor",
     icon=":material/account_tree:",
-    
 )
-
 upload_curiculum = st.Page(
-    "programTree/upload_curriculum.py",
+    "programTree/curriculum_uploader.py",
     title="Upload Curiculum",
     icon=":material/upload:",
     default=(role == "Dean"or role == "Subject Chair"),
@@ -176,35 +175,34 @@ account_pages = [logout_page, settings]
 admin_pages = [manage_users]
 program_tree_pages = [upload_curiculum,curriculum_editor]
 
-# ========================== Main Program ===============================
-st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
-
-page_dict = {}
-if st.session_state.role in ["Admin"]:
-    page_dict["Admin"] = admin_pages
-if st.session_state.role in ["Dean", "Subject Chair"]:
-    page_dict["Curriculum Builder"] = program_tree_pages
-
-if st.session_state['is_logged_in'] and len(page_dict) > 0 :
-    pg = st.navigation({"Account": account_pages} | page_dict)
-    
-else:
-    initialize_db()
-    if admin_registeration_check():
-        pg = st.navigation([st.Page(admin_registration)])
+def main():
+    st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
+    page_dict = {}
+    if st.session_state.role in ["Admin"]:
+        page_dict["Admin"] = admin_pages
+    if st.session_state.role in ["Dean", "Subject Chair"]:
+        page_dict["Curriculum Builder"] = program_tree_pages
+    if st.session_state['is_logged_in'] and len(page_dict) > 0 :
+        pg = st.navigation({"Account": account_pages} | page_dict)
     else:
-        if st.session_state['is_page_login']==True:
-            pg = st.navigation([st.Page(login,title="Login")])
+        initialize_db()
+        if admin_registeration_check():
+            pg = st.navigation([st.Page(admin_registration)])
+        elif st.session_state['is_page_login']==True:
+                pg = st.navigation([st.Page(login,title="Login")])
         else:
             pg = st.navigation([st.Page(general_registration,title="Register")])
-pg.run()
-if st.session_state['is_logged_in']:
-    match st.session_state['role']:
-        case "Admin":
-            st.sidebar.badge(f"[{st.session_state['role']}] {st.session_state['username']} ")
-        case "Dean":
-            st.sidebar.badge(f"[{st.session_state['department']} {st.session_state['role']}] {st.session_state['username']} ")
-        case "Subject Chair":
-            st.sidebar.badge(f"[{st.session_state['program']} {st.session_state['role']}] {st.session_state['username']} ")
-        case _:
-            st.sidebar.badge(f"[{st.session_state['role']}] {st.session_state['username']} ")
+    pg.run()
+    if st.session_state['is_logged_in']:
+        match st.session_state['role']:
+            case "Admin":
+                st.sidebar.badge(f"[{st.session_state['role']}] {st.session_state['username']} ")
+            case "Dean":
+                st.sidebar.badge(f"[{st.session_state['department']} {st.session_state['role']}] {st.session_state['username']} ")
+            case "Subject Chair":
+                st.sidebar.badge(f"[{st.session_state['program']} {st.session_state['role']}] {st.session_state['username']} ")
+            case _:
+                st.sidebar.badge(f"[{st.session_state['role']}] {st.session_state['username']} ")
+
+if __name__ == "__main__":
+    main()
