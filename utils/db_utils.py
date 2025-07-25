@@ -232,28 +232,23 @@ def change_password_to_new(username,old_password,new_password):
         cursor = conn.cursor()
         try:
             cursor.execute('BEGIN TRANSACTION;')
-            cursor.execute(
-                '''
-                SELECT password FROM users
-                WHERE username = ?
-                ''',
-                (username,)
-            )
-            stored_password = cursor.fetchone()[0]
-            if hash_password(old_password) != stored_password:
-                raise sqlite3.IntegrityError("Incorrect old Password, please try again.")
+
+            # Update only if the old password matches
             cursor.execute(
                 '''
                 UPDATE users
                 SET password = ?
-                WHERE username = ?
+                WHERE username = ? AND password = ?
                 ''',
-                (hash_password(new_password), username,)
+                (hash_password(new_password), username, hash_password(old_password))
             )
+
             if cursor.rowcount == 0:
-                raise sqlite3.IntegrityError("Password change failed.")
+                raise sqlite3.IntegrityError("Incorrect old Password, please try again.")
+
             conn.commit()
             return {"status": True, "message": "Password Successfully Changed."}
+
         except sqlite3.IntegrityError as e:
             conn.rollback()
             if "users.password" in str(e):
