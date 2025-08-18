@@ -42,9 +42,7 @@ def initialize_db():
             curriculum_id INTEGER PRIMARY KEY,
             curriculum_name TEXT NOT NULL UNIQUE,
             program_id INTEGER NOT NULL,
-            department_id INTEGER NOT NULL,
-            FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE SET NULL,
-            FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
+            FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE SET NULL
         );''',
 
         '''CREATE TABLE IF NOT EXISTS course (
@@ -69,25 +67,18 @@ def initialize_db():
             FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE
         );''',
 
-        '''CREATE TABLE IF NOT EXISTS course_prerequisite (
+        '''CREATE TABLE IF NOT EXISTS course_requirements (
             curriculum_id INTEGER NOT NULL,
             course_id INTEGER NOT NULL,
-            prerequisite_course_id INTEGER NOT NULL,
-            PRIMARY KEY (curriculum_id, course_id, prerequisite_course_id),
+            required_course_id INTEGER NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('prerequisite', 'corequisite')),
+            PRIMARY KEY (curriculum_id, course_id, required_course_id, type),
             FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
             FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE,
-            FOREIGN KEY (prerequisite_course_id) REFERENCES course(course_id) ON DELETE CASCADE
+            FOREIGN KEY (required_course_id) REFERENCES course(course_id) ON DELETE CASCADE
         );''',
 
-        ''' CREATE TABLE IF NOT EXISTS course_corequisite (
-            curriculum_id INTEGER NOT NULL,
-            course_id INTEGER NOT NULL,
-            corequisite_course_id INTEGER NOT NULL,
-            PRIMARY KEY (curriculum_id, course_id, corequisite_course_id),
-            FOREIGN KEY (curriculum_id) REFERENCES curriculum(curriculum_id) ON DELETE CASCADE,
-            FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE,
-            FOREIGN KEY (corequisite_course_id) REFERENCES course(course_id) ON DELETE CASCADE
-        );''',
+        '''CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);'''
     ]
 
     try:

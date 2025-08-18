@@ -148,34 +148,33 @@ def logout():
     st.cache_data.clear()
     st.rerun()
 
-role = st.session_state["role"]
-
-logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
-settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
-
-
-manage_users = st.Page(
-    "admin/manage_users.py", 
-    title="Manage Users", 
-    icon=":material/people:", 
-    default=(role == "Admin"),)
-curriculum_editor= st.Page(
-    "programTree/curriculum_editor.py",
-    title="Curriculum Editor",
-    icon=":material/account_tree:",
-)
-upload_curiculum = st.Page(
-    "programTree/curriculum_uploader.py",
-    title="Upload Curiculum",
-    icon=":material/upload:",
-    default=(role == "Dean"or role == "Subject Chair"),
-)
-
-account_pages = [logout_page, settings]
-admin_pages = [manage_users]
-program_tree_pages = [upload_curiculum,curriculum_editor]
-
 def main():
+    role = st.session_state["role"]
+
+    logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
+    settings = st.Page("settings.py", title="Settings", icon=":material/settings:")
+
+
+    manage_users = st.Page(
+        "admin/manage_users.py", 
+        title="Manage Users", 
+        icon=":material/people:", 
+        default=(role == "Admin"),)
+    curriculum_editor= st.Page(
+        "programTree/curriculum_editor.py",
+        title="Curriculum Editor",
+        icon=":material/account_tree:",
+    )
+    upload_curiculum = st.Page(
+        "programTree/curriculum_uploader.py",
+        title="Upload Curiculum",
+        icon=":material/upload:",
+        default=(role == "Dean"or role == "Subject Chair"),
+    )
+
+    account_pages = [logout_page, settings]
+    admin_pages = [manage_users]
+    program_tree_pages = [upload_curiculum,curriculum_editor]
     st.logo("images/Scheduling_Tools.PNG", icon_image="images/scheduler.png",size = "large")
     page_dict = {}
     if st.session_state.role in ["Admin"]:
