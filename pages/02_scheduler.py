@@ -1,84 +1,108 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime, timedelta
 
-# st.set_page_config(page_title="Weekly Timetable Scheduler", layout="wide")
+st.set_page_config(page_title="Multi-Year Scheduler", layout="wide")
 
+# ---------------------------------
+# CONFIGURATION
+# ---------------------------------
+YEAR_TERM_CONFIG = {
+    1: 3,
+    2: 3,
+    3: 4,
+    4: 4,
+}
 
-# st.caption("Assign subjects to time slots for each day of the week")
+DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+START_TIME = "07:30"
+END_TIME = "21:15"
+SLOT_MINUTES = 75
 
+# ---------------------------------
+# Generate time slots
+# ---------------------------------
+def generate_time_slots(start, end, interval_minutes):
+    slots = []
+    current = datetime.strptime(start, "%H:%M")
+    end_time = datetime.strptime(end, "%H:%M")
 
-# --- Configuration ---
-days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-time_slots = [
-    "07:00AM - 09:00AM",
-    "09:00AM - 10:30AM",
-    "10:30AM - 12:00PM",
-    "12:00PM - 01:30PM",
-    "01:30PM - 03:00PM",
-    "03:00PM - 04:30PM",
-    "04:30PM - 06:00PM",
-    "06:00PM - 07:30PM",
-    "07:30PM - 09:00PM",
-]
+    while current < end_time:
+        next_time = current + timedelta(minutes=interval_minutes)
+        slots.append(
+            f"{current.strftime('%I:%M %p')} - {next_time.strftime('%I:%M %p')}"
+        )
+        current = next_time
 
-subjects = ["", "Math", "Science", "English", "History", "Programming", "Electronics"]
+    return slots
 
-# # --- Initialize timetable ONCE ---
-# if "timetable" not in st.session_state:
-#     st.session_state.timetable = pd.DataFrame(
-#         "", index=time_slots, columns=days
-#     )
+TIME_SLOTS = generate_time_slots(
+    START_TIME,
+    END_TIME,
+    SLOT_MINUTES
+)
 
+# ---------------------------------
+# Schedule template
+# ---------------------------------
+def make_empty_schedule():
+    return pd.DataFrame(
+        "",
+        index=TIME_SLOTS,
+        columns=DAYS
+    )
 
-# st.title("📅 Weekly Timetable Scheduler")
+# ---------------------------------
+# Initialize session state
+# ---------------------------------
+for year, term_count in YEAR_TERM_CONFIG.items():
+    for term in range(1, term_count + 1):
+        key = f"year_{year}_term_{term}_df"
+        if key not in st.session_state:
+            st.session_state[key] = make_empty_schedule()
 
-# # --- Timetable Editor (NO reassignment, NO rerun) ---
-# st.subheader("🗓️ Weekly Schedule")
+# ---------------------------------
+# Term renderer
+# ---------------------------------
+def render_term(year: int, term: int):
+    st.subheader(f"Year {year} — Term {term}")
 
-# st.data_editor(
-#     st.session_state.timetable,
-#     key="timetable_editor",
-#     width = 'stretch',
-#     column_config={
-#         day: st.column_config.SelectboxColumn(
-#             label=day,
-#             options=subjects
-#         ) for day in days
-#     },
-#     num_rows="fixed"
-# )
+    df_key = f"year_{year}_term_{term}_df"
+    editor_key = f"editor_year_{year}_term_{term}"
 
-# # --- Assign via Form (isolated rerun) ---
-# st.subheader("➕ Assign Subject to Slot")
+    edited_df = st.data_editor(
+        st.session_state[df_key],
+        width = 'stretch',
+        num_rows="fixed",
+        height='content',
+        key=editor_key
+    )
 
-# with st.form("assign_form"):
-#     col1, col2, col3 = st.columns(3)
+    # Persist edits
+    st.session_state[df_key] = edited_df
 
-#     with col1:
-#         day = st.selectbox("Day", days)
-#     with col2:
-#         time = st.selectbox("Time Slot", time_slots)
-#     with col3:
-#         subject = st.selectbox("Subject", subjects)
+    if st.button(
+        "Save Term",
+        key=f"save_year_{year}_term_{term}"
+    ):
+        st.success(f"Year {year}, Term {term} saved!")
 
-#     submitted = st.form_submit_button("Assign")
+# ---------------------------------
+# UI: Year tabs
+# ---------------------------------
+year_tabs = st.tabs([f"Year {y}" for y in YEAR_TERM_CONFIG.keys()])
 
-# if submitted:
-#     st.session_state.timetable.loc[time, day] = subject
-#     st.success(f"Assigned {subject or 'Empty'} on {day} at {time}")
+for year_tab, (year, term_count) in zip(year_tabs, YEAR_TERM_CONFIG.items()):
+    with year_tab:
 
-# # --- Export / Reset ---
-# st.subheader("💾 Actions")
+        # ---------------------------------
+        # UI: Term tabs
+        # ---------------------------------
+        term_tabs = st.tabs(
+            [f"Term {t}" for t in range(1, term_count + 1)]
+        )
 
-# col1, col2 = st.columns(2)
-
-# with col1:
-#     csv = st.session_state.timetable.to_csv()
-#     st.download_button("Download CSV", csv, "timetable.csv", "text/csv")
-
-# with col2:
-#     if st.button("Reset Timetable"):
-#         st.session_state.timetable[:] = ""
-
-
+        for term_tab, term in zip(term_tabs, range(1, term_count + 1)):
+            with term_tab:
+                render_term(year, term)
